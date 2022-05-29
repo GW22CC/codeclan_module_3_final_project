@@ -1,0 +1,183 @@
+---
+title: "Final project documentation template - PDA"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    df_print: paged
+    pdf_document: default
+  word_document:
+    toc: yes
+---
+
+# General
+
+### Data Requirements
+
+I cna confirm that the data used in the project meets the following criteria:
+
+| Criteria | Expected | Actual |
+|----------|----------|--------|
+| Number of rows | 5,000 | TBC |
+| Sources of data | 3 | TBC |
+| Data types | text data, numeric data and dates | TBC | 
+
+
+# Template
+
+## Context
+
+#### Business intelligence and data-driven decision making
+
+What insights can the business/organisation gain from your analysis and how will your analysis help the business/organisation make better decisions? 
+
+#### Domain knowledge and the business context
+
+Briefly describe the business/organisation and where your analysis fits within its aims/activity. 
+
+The Scottish Household SUrvey (SHS), which began in 1999, is a continuous survey based on a sample of the general population in private residences in Scotland. It is financed by the Scottish Government. The aim of the survey is to provide representative information about the composition, characteristics and behaviours of Scottish households, both nationally and at a more local level. The survey covers a wide range of topics to allow links to be made between different policy areas, with a particular focus on information to aid policy decisions on transport and social inclusion.
+
+From 1999 up to 2011 the survey followed a fairly consistent survey design. From 2012 onwards, the survey was substantially redesigned to include elements of the Scottish House Condition Survey (SHCS) including the follow-up Physical Survey component. More details can be found in the survey documentation. 
+
+
+## Data
+
+#### Internal and external data sources
+
+Brief description of data sources both internal (provided by the organisation) and external (not sourced from the organisation's data).
+
+The internal data files are:
+
+- 'Distance to Green or Blue Space' 
+
+Every year Scottish Household Survey (SHS) asks adults how long it would take them to walk to their nearest green or blue space.
+
+The question asking about walking distance to nearest greenspace informs the National Indicator on Access to Green and Blue Spaces. However before 2019, even though the list of spaces included riversides and beaches, the question text used the term "green or open space". In 2019 for one half of the sample this was changed slightly to "green, blue or open spaces" to check if including the word "blue" made any difference to the response given to the question about walking distance or the biennial follow-up questions asking about satisfaction with and frequency of use of nearest green or blue space. No statistically significant difference was found.
+
+The data is reported here is representative of the adult population and is available by:
+
+• Local Authority
+
+• Age of the randomly selected adult
+
+• Gender of the randomly selected adult
+
+In the 2018 SHS the gender question was revised. In previous years interviewers asked if household members were 'male' or 'female'. In the 2018 survey the options given were: 'man/boy', 'woman/girl' and two additional responses: ‘identified in another way’ and ‘refused’. In order to remain harmonised with other statistics.gov.scot datasets, the previous response options 'male' and 'female' will be maintained.
+
+• Urban/Rural Classification
+
+• SIMD
+
+• Type Of Tenure
+
+• Household Type
+
+• Ethnicity of the randomly selected adult
+
+- 'Community belonging' 
+
+Every year Scottish Household Survey (SHS) asks adults how strongly they feel they belong to their immediate neighbourhood. The data is reported here on person level and is available by:
+
+• Local Authority
+
+• Gender of the randomly selected adult
+
+In the 2018 Scottish Household Survey the gender question was revised. In previous years interviewers asked if household members were 'male' or 'female'. In the 2018 survey the options given were: 'man/boy', 'woman/girl' and two additional responses: ‘identified in another way’ and ‘refused’. In order to remain harmonised with other statistics.gov.scot datasets, the previous response options 'male' and 'female' will be maintained.
+
+• Urban/Rural Classification
+
+• SIMD - 'Scottish Index of Multiple Deprivation 2020' The Scottish Index of Multiple Deprivation (SIMD) provides a relative ranking of the data zones in Scotland from 1 (most deprived) to 6,976 (least deprived) based on a weighted combination of data for seven domains: income, employment, health, education, skills and training, geographic access to services, crime and housing. The dataset includes ranks for each domain, as well as quantile bands for the overall and domain ranks (5%, 10% and 20%).
+
+Each data zone is assigned to vigintiles, deciles and quintiles, with band 1 containing the most deprived data zones. For instance, SIMD decile 1 contains the most deprived 10% of data zones and decile 10 contains the least deprived 10% of data zones.
+
+When comparing results across different iterations of SIMD, it is important to take account of changes to the methodology used to construct the individual domains and the overall SIMD between iterations, as well as changes in geographical units as data zones change for each Census.
+
+• Type Of Tenure
+
+• Household Type
+
+• Ethnicity
+
+• Walking distance to nearest green-space.
+
+
+I also used the '2011 Data Zone Lookup' .csv. file which contained geography lookup tables used for aggregation, from 2011 data zones to higher level geographies.
+
+The external data files are:
+
+
+
+
+#### Types of data
+
+What kind of data did you work with? E.g. categorical and numerical data and their sub-types.
+
+#### Data formats
+
+What format did your data come in? E.g. all downloaded flat files (CSV) or any data from APIs, scraping etc.
+
+#### Data quality and bias
+
+Briefly describe the quality of the data and whether you have any reasons to suggest the data is biased e.g. only data from a specific demographic even though a broader demographic would be of interest to the organisation.
+
+## Ethics
+
+#### Ethical issues in data sourcing and extraction
+
+Do you have any ethical concerns regarding the sourcing and extraction of your data? 
+
+#### Ethical implications of business requirements
+
+Are there any ethical implications of the business requirements?
+
+## Analysis
+
+#### Stages in the data analysis process
+
+What were the main stages in your data analysis process?
+
+#### Tools for data analysis
+
+What were the main tools you used for your analysis?
+
+#### Descriptive, diagnostic, predictive and prescriptive analysis
+
+Please report under which of the below categories your analysis falls **and why** (can be more than one) 
+
+::: {.emphasis}
+**Descriptive Analytics** tells you what happened in the past.
+
+**Diagnostic Analytics** helps you understand why something happened in the past.
+
+**Predictive Analytics** predicts what is most likely to happen in the future.
+
+**Prescriptive Analytics** recommends actions you can take to affect those outcomes.
+:::
+
+
+# PDA Outcomes
+
+### Working with Data (J4Y6 35)
+
+#### 1. Plan an analysis to provide business intelligence
+
+-   1.1 Business intelligence and data-driven decision making
+-   1.2 Domain knowledge and the business context
+-   1.4 Internal and external data sources
+-   1.5 Data quality
+-   1.6 Stages in the data analysis process
+-   1.7 Descriptive, diagnostic, predictive and prescriptive analysis
+-   1.9 Ethical implications of business requirements
+-   1.10 Tools for data analysis
+
+#### 2. Extract data from a variety of sources
+
+-   2.1 Tools for querying data sources
+-   2.2 Types of data (categorical and numerical data and their sub-types)
+-   2.3 Data formats
+-   2.6 Data quality including data bias
+-   2.7 Ethical issues in data sourcing and extraction
+
+#### 4. Analyse data to provide business intelligence
+
+-   4.7 Role of domain knowledge in interpreting analyses
