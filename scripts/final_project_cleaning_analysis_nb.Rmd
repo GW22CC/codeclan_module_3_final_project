@@ -16,14 +16,14 @@ library(ggplot2)
 
 ```{r, message=FALSE}
 # core data files
-comm_belong <- read_csv("../raw_data/shs_community_belonging.csv") %>% clean_names()
-neighbourhood_rating <- read_csv("../raw_data/shs_neighbourhood_raiting.csv") %>% clean_names()
 dist_blue_green <- read_csv("../raw_data/shs_dist_to_blue_or_green_space.csv") %>% clean_names()
+neighbourhood_rating <- read_csv("../raw_data/shs_neighbourhood_raiting.csv") %>% clean_names()
+comm_belong <- read_csv("../raw_data/shs_community_belonging.csv") %>% clean_names()
 
 ```
 
 
-
+Additional files and Extension topics
 
 ```{r}
 # additional files
@@ -33,8 +33,39 @@ proximity_to_derelict <- read_csv("../raw_data/shs_population_living_in_close_pr
 
 ```
 
+Exploring data
+
 ```{r}
-shs_data_bind <- comm_belong %>% bind_rows(dist_blue_green, neighbourhood_rating)
+dist_blue_green %>% distinct(units)
+
+dist_blue_green %>% 
+  filter(feature_code == "S12000033", gender == "Female", measurement == "Percent", date_code == "2019") %>% 
+  arrange(desc(date_code))
+
+comm_belong %>% 
+  filter(feature_code == "S12000033", gender == "Female", measurement == "Percent", date_code == "2019") %>% 
+  arrange(desc(date_code))
+
+# remove 'Units'
+
+```
+
+Data cleaning: 
+
+- make column titles more explicit ("year" = date_code");0
+- harmonise before df joins ("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space");
+- deselect "Units" column from joined dfs
+- rename (date code == year)
+
+```{r}
+dist_blue_green <- dist_blue_green %>% 
+  rename("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space")
+
+shs_data_join <- dist_blue_green %>% 
+  full_join(comm_belong) %>% 
+  full_join(neighbourhood_rating) %>% 
+  select(-units) %>% # deselect "Units" column
+  rename("year" = "date_code")
 
 ```
 
@@ -45,22 +76,320 @@ data_zones_trim <- data_zones %>%
   select(la_code, la_name) %>% 
   distinct()
 
-shs_data_la_join <- shs_data_bind %>% 
-  left_join(data_zones_trim, by = c("feature_code" = "la_code"))
+shs_data_la_join <- shs_data_join %>% 
+  left_join(data_zones_trim, by = c("feature_code" = "la_code")) %>% 
+  mutate(la_name = if_else(feature_code == "S92000003", "Scotland", la_name)) 
+
+shs_data_la_join %>% filter(is.na(la_name)) %>% distinct(feature_code) # sense check for any missing la_name vals and associated feature_code
 
 ```
+
+Write clean data to file at clean data folder:
+
 
 
 ## Analysis
 
+### General Questions
+
+We would like to to help us gain insights into how people feel about their local communities in Scotland. In particular, we are interested in the relationship between distance to outdoor space, and neighbourhood ratings.
+
+    Are there certain groups that have local access to green space?
+    Are there groups that are lacking access?
+    What there big differences in how far people have to walk to access their green space?
+    Are there any differences between rural and urban areas?
+    
+    How do people in neighbourhoods with good access to green space differ from those who have no good access? 
+    Are there differences in how they rate their neighbourhoods? 
+    Are there differences in how they rate their communities?
+    
+    Is there any way to predict which households would have higher ratings?
+
+
 ### Visualisation
+
+Focus age, gender, ethnicity, household type, simd quintiles, urban or rural, disabled, local authority, religion.
+
+I am defining "local access" as 0-10 minutes because i think that seems reasonable and 11+ is open ended so could be an hour for example. Updaet: 5 minute walk is used in the national indicator.
+
+Are there certain groups that have local access to green space? Are there groups that are lacking access?
+
+```{r}
+shs_data_la_join <- shs_data_la_join %>% 
+  mutate(local_access = if_else(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less", "Local access", "No local access"), .after = walking_time_to_nearest_green_or_blue_space)
+```
+
+## Ethnicity 
+
+```{r}
+shs_data_la_join %>%
+  filter(measurement == "Percent") %>%
+  filter(age != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(age) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = age, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(age != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(age, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = age, colour = age)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## Age
+
+```{r}
+shs_data_la_join %>%
+  filter(measurement == "Percent") %>%
+  filter(ethnicity != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(ethnicity) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = ethnicity, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(ethnicity != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(ethnicity, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = ethnicity, colour = ethnicity)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## Gender (note - these cats may have changed in recent years)
+
+```{r}
+shs_data_la_join %>%
+  filter(measurement == "Percent") %>%
+  filter(gender != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(gender) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = gender, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(gender != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(gender, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = gender, colour = gender)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## Household type
+
+```{r}
+shs_data_la_join %>%
+  filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(household_type) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = household_type, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  #filter(gender != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(household_type, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = household_type, colour = household_type)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## SIMD
 
 ```{r}
 shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  filter(simd_quintiles != "All") %>% 
+  group_by(simd_quintiles) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = simd_quintiles, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(simd_quintiles != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(simd_quintiles, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = simd_quintiles, colour = simd_quintiles)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+## Urban or rural
+
+```{r}
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  filter(urban_rural_classification != "All") %>% 
+  group_by(urban_rural_classification) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = urban_rural_classification, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(urban_rural_classification != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(urban_rural_classification, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = urban_rural_classification, group = urban_rural_classification)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## Local Authority (LA)
+
+```{r}
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  filter(la_name != "All") %>% 
+  group_by(la_name) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = la_name, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(la_name, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = la_name, colour = la_name)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme(legend.position = "False")
+
+```
+
+## Neighbourhood vs. age
+
+```{r}
+shs_data_la_join %>%
+  filter(measurement == "Percent") %>%
+  filter(age == "All") %>% 
+  filter(!is.na(neighbourhood_rating)) %>% 
+  count(neighbourhood_rating) %>% 
+  ggplot() +
+  aes(x = age, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+shs_data_la_join %>% 
+  filter(measurement == "Percent") %>%
+  filter(age != "All") %>% 
+  filter(neighbourhood_rating == "") %>%
+  group_by(age, year) %>% 
+  summarise(mean_perc = count(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = age, colour = age)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+```{r}
+shs_data_la_join %>%
+  filter(gender != "NA" & gender != "All") %>%
+  ggplot() +
+  aes(x = gender, y = local_access) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+shs_data_la_join %>%
+  filter(ethnicity != "All") %>%
+  ggplot() +
+  aes(x = ethnicity, y = local_access) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+shs_data_la_join %>%
+  filter(household_type != "All") %>%
+  ggplot() +
+  aes(x = household_type, y = local_access) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+shs_data_la_join %>%
+  filter(simd_quintiles != "All") %>%
+  ggplot() +
+  aes(x = simd_quintiles, y = local_access) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+shs_data_la_join %>% 
+  distinct(urban_rural_classification)
+
+```
+
+What there big differences in how far people have to walk to access their green space?
+
+```{r}
+shs_data_la_join %>%
+  filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(walking_distance_to_nearest_greenspace != "All") %>% 
   ggplot() +
   aes(x = la_name, fill = walking_distance_to_nearest_greenspace) +
-  geom_bar()
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+Are there any differences between rural and urban areas?
+
+```{r}
+shs_data_la_join %>%
+  filter(urban_rural_classification != "All") %>%
+  ggplot() +
+  aes(x = urban_rural_classification, y = local_access) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+
+```
+
+```{r}
+dist_blue_green %>% 
+  filter(distance_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
+  group_by(ethnicity, date_code) %>% 
+  summarise(mean_percentage = mean(value)) %>% 
+  arrange(date_code)
 
 ```
 

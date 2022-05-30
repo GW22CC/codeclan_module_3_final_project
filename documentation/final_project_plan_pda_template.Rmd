@@ -39,6 +39,15 @@ The Scottish Household SUrvey (SHS), which began in 1999, is a continuous survey
 
 From 1999 up to 2011 the survey followed a fairly consistent survey design. From 2012 onwards, the survey was substantially redesigned to include elements of the Scottish House Condition Survey (SHCS) including the follow-up Physical Survey component. More details can be found in the survey documentation. 
 
+This is crucial to informing the Fairer Scotland agenda, National Performance Framework and feeds in to the Scottish Surveys Core Questions (SSCQ) sample.
+
+The Fairer Scotland Duty (the Duty) came into force on 1 April 2018 and places a legal responsibility on named public bodies in Scotland to actively consider ('pay due regard' to) how they can reduce inequalities of outcome caused by socio-economic disadvantage, when making strategic decisions.
+
+The The National Performance Framework (NPF) measures Scotland’s progress against the National Outcomes. To do this, it uses ‘National Indicators’.
+
+These indicators give a measure of national wellbeing. They include a range of economic, social and environmental indicators.
+
+The Scottish Surveys Core Questions (SSCQ) is an annual Official Statistics publication. SSCQ is a result of a harmonised design across the three major Scottish Government household surveys, envisaged in the Long Term Survey Strategy. From January 2012 a set of 20 core questions have been asked in the Scottish Household Survey, the Scottish Health Survey and the Scottish Crime and Justice Survey. 
 
 ## Data
 
