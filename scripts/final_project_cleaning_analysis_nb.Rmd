@@ -22,7 +22,6 @@ comm_belong <- read_csv("../raw_data/shs_community_belonging.csv") %>% clean_nam
 
 ```
 
-
 Additional files and Extension topics
 
 ```{r}
@@ -33,45 +32,39 @@ proximity_to_derelict <- read_csv("../raw_data/shs_population_living_in_close_pr
 
 ```
 
-Exploring data
+Data cleaning/ wrangling: 
 
-```{r}
-dist_blue_green %>% distinct(units)
-
-dist_blue_green %>% 
-  filter(feature_code == "S12000033", gender == "Female", measurement == "Percent", date_code == "2019") %>% 
-  arrange(desc(date_code))
-
-comm_belong %>% 
-  filter(feature_code == "S12000033", gender == "Female", measurement == "Percent", date_code == "2019") %>% 
-  arrange(desc(date_code))
-
-# remove 'Units'
-
-```
-
-Data cleaning: 
-
-- make column titles more explicit ("year" = date_code");0
-- harmonise before df joins ("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space");
-- deselect "Units" column from joined dfs
-- rename (date code == year)
+- harmonise variable names before df joins ("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space");
+- deselect "Units" column from joined dfs;
+- make variable names more explicit (date code == year)
 
 ```{r}
 dist_blue_green <- dist_blue_green %>% 
-  rename("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space")
+  rename("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space") %>% 
+  filter(measurement == "Percent")
 
+neighbourhood_rating <- neighbourhood_rating %>% 
+  filter(measurement == "Percent")
+
+comm_belong <- comm_belong %>% 
+  filter(measurement == "Percent")
+
+```
+
+
+```{r}
 shs_data_join <- dist_blue_green %>% 
-  full_join(comm_belong) %>% 
   full_join(neighbourhood_rating) %>% 
-  select(-units) %>% # deselect "Units" column
+  full_join(comm_belong) %>% 
+  select(-c(units, measurement)) %>% # deselect "Units" column
   rename("year" = "date_code")
 
 ```
 
+The CIs have been retained for plotting purposes however do increase the number of rows.
 
 ```{r}
-# joining with data zones table to use real place names and make things more tangible
+# joining with data zones table by la_code to have Local Authority names
 data_zones_trim <- data_zones %>% 
   select(la_code, la_name) %>% 
   distinct()
@@ -80,12 +73,18 @@ shs_data_la_join <- shs_data_join %>%
   left_join(data_zones_trim, by = c("feature_code" = "la_code")) %>% 
   mutate(la_name = if_else(feature_code == "S92000003", "Scotland", la_name)) 
 
-shs_data_la_join %>% filter(is.na(la_name)) %>% distinct(feature_code) # sense check for any missing la_name vals and associated feature_code
+# shs_data_la_join %>% filter(is.na(la_name)) %>% distinct(feature_code) # sense check for any missing la_name vals and associated feature_code
+
+shs_data_clean <- shs_data_la_join # re-assigning cleaned data to explicity object
 
 ```
 
 Write clean data to file at clean data folder:
 
+```{r}
+# write_csv("../clean_data/shs_data_clean.csv")
+
+```
 
 
 ## Analysis
@@ -108,22 +107,23 @@ We would like to to help us gain insights into how people feel about their local
 
 ### Visualisation
 
-Focus age, gender, ethnicity, household type, simd quintiles, urban or rural, disabled, local authority, religion.
+Focus on age, gender, ethnicity, household type, simd quintiles, urban or rural, disabled, local authority, religion.
 
 I am defining "local access" as 0-10 minutes because i think that seems reasonable and 11+ is open ended so could be an hour for example. Updaet: 5 minute walk is used in the national indicator.
 
-Are there certain groups that have local access to green space? Are there groups that are lacking access?
+```Are there certain groups that have local access to green space (<5min)? Are there groups that are lacking access (10+)?```
 
 ```{r}
-shs_data_la_join <- shs_data_la_join %>% 
-  mutate(local_access = if_else(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less", "Local access", "No local access"), .after = walking_time_to_nearest_green_or_blue_space)
+# shs_data_la_join <- shs_data_clean %>% 
+#   mutate(local_access = if_else(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less", "Local access", "No local access"), .after = walking_time_to_nearest_green_or_blue_space)
+
 ```
 
-## Ethnicity 
+## Age 
 
 ```{r}
-shs_data_la_join %>%
-  filter(measurement == "Percent") %>%
+shs_data_clean %>%
+  #filter(measurement == "Percent") %>%
   filter(age != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(age) %>% 
@@ -133,8 +133,8 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   filter(age != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(age, year) %>% 
@@ -145,10 +145,40 @@ shs_data_la_join %>%
 
 ```
 
-## Age
+Interpretation:
+
+Adults 35-64 years old age group have greater local access to green or blue space compared to (65+) elderly. The 16-34 year old age group generally ahve similar access to 35-64 however access is similar to elderly in 2015 and 2016 - currently unclear why.
 
 ```{r}
-shs_data_la_join %>%
+shs_data_clean %>%
+  #filter(measurement == "Percent") %>%
+  filter(age != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
+  group_by(age) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = age, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
+  filter(age != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
+  group_by(age, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = age, colour = age)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+
+## Ethnicity
+
+```{r}
+shs_data_clean %>%
   filter(measurement == "Percent") %>%
   filter(ethnicity != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
@@ -159,7 +189,7 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_la_join %>% 
+shs_data_clean %>% 
   filter(measurement == "Percent") %>%
   filter(ethnicity != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
@@ -171,11 +201,40 @@ shs_data_la_join %>%
 
 ```
 
-## Gender (note - these cats may have changed in recent years)
+Interpetation:
+
+White ethnicity have greater access than non-white and this trend is consistent albeit to varying degrees across the years 2013-2019.
 
 ```{r}
-shs_data_la_join %>%
+shs_data_clean %>%
   filter(measurement == "Percent") %>%
+  filter(ethnicity != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
+  group_by(ethnicity) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  aes(x = ethnicity, y = mean_perc) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+shs_data_clean %>% 
+  filter(measurement == "Percent") %>%
+  filter(ethnicity != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
+  group_by(ethnicity, year) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = ethnicity, colour = ethnicity)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+## Gender (note - these cats may have changed in recent years so review)
+
+```{r}
+shs_data_clean %>%
+  #filter(measurement == "Percent") %>%
   filter(gender != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(gender) %>% 
@@ -185,8 +244,8 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   filter(gender != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(gender, year) %>% 
@@ -197,11 +256,16 @@ shs_data_la_join %>%
 
 ```
 
+Interpretation:
+
+Males have greater access to local green or blue space and although this difference is marginal (~2%) it is a consitent trend across the years 2013-2019.
+
+
 ## Household type
 
 ```{r}
-shs_data_la_join %>%
-  filter(measurement == "Percent") %>%
+shs_data_clean %>%
+  #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(household_type) %>% 
   summarise(mean_perc = mean(value)) %>% 
@@ -210,8 +274,8 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   #filter(gender != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(household_type, year) %>% 
@@ -222,11 +286,15 @@ shs_data_la_join %>%
 
 ```
 
+Interpretation:
+
+Households with children have the greatest access to local green or blue space although this is marginally greater than adult only households. Pensions have the lowest access to local green or blue space. The trend across all household types is of decreasing access to outdoor space although the difference from start (2013) to end (2019) is marginal.
+
 ## SIMD
 
 ```{r}
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(simd_quintiles != "All") %>% 
   group_by(simd_quintiles) %>% 
@@ -236,8 +304,8 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   filter(simd_quintiles != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(simd_quintiles, year) %>% 
@@ -247,11 +315,15 @@ shs_data_la_join %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
+Interpretation:
+
+The 80% least deprived have greater access to local green or outdoor space then the 20% most deprived on the SIMD. This is consistent across all years, 2013-2019.
+
 ## Urban or rural
 
 ```{r}
 shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+  #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(urban_rural_classification != "All") %>% 
   group_by(urban_rural_classification) %>% 
@@ -262,22 +334,27 @@ shs_data_la_join %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+  #filter(measurement == "Percent") %>%
   filter(urban_rural_classification != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(urban_rural_classification, year) %>% 
   summarise(mean_perc = mean(value)) %>% 
   ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = urban_rural_classification, group = urban_rural_classification)) +
+  geom_line(aes(x = year, y = mean_perc, group = urban_rural_classification, colour = urban_rural_classification)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ```
 
+Interpretation:
+
+Respondents living in rural areas have greater access to local green or outdoor space than respondents living in urban areas. This is consistent across all years, 2013-2019.
+
+
 ## Local Authority (LA)
 
 ```{r}
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(la_name != "All") %>% 
   group_by(la_name) %>% 
@@ -287,8 +364,17 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  filter(la_name != "All") %>% 
+  group_by(la_name) %>% 
+  summarise(mean_perc = mean(value)) %>% 
+  arrange(desc(mean_perc)) %>% 
+  head(5)
+
+shs_data_clean %>% 
+  #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(la_name, year) %>% 
   summarise(mean_perc = mean(value)) %>% 
@@ -299,29 +385,131 @@ shs_data_la_join %>%
 
 ```
 
-## Neighbourhood vs. age
+Interpretation:
+
+The range of variation in access to local green or blue areas between local authority areas is ~55-85% (30%). The LA with least access is West Dunbartonshire 50.87037 and the are with greatest is East Lothian	83.92233.
+
+```Are there big differences in how far people have to walk to access their green space?```
+
+What is the time category proportion to green or blue space for the age groups with different access?
 
 ```{r}
-shs_data_la_join %>%
+shs_data_clean %>%
+  filter(age != "All") %>% # want age bands
+  group_by(age, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = age)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+What is the time category proportion to green or blue space for the ethnicity groups with different access?
+
+```{r}
+shs_data_clean %>%
+  filter(ethnicity != "All") %>% # want age bands
+  group_by(ethnicity, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = ethnicity)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+Gender
+
+```{r}
+shs_data_clean %>%
+  filter(gender != "All") %>% # want age bands
+  group_by(gender, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = gender)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+shs_data_clean %>%
+  filter(household_type != "All") %>% # want age bands
+  group_by(household_type, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = household_type)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+```{r}
+shs_data_clean %>%
+  filter(simd_quintiles != "All") %>% # want age bands
+  group_by(simd_quintiles, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = simd_quintiles)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+```{r}
+shs_data_clean %>%
+  filter(urban_rural_classification != "All") %>% # want age bands
+  group_by(urban_rural_classification, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = urban_rural_classification)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+For this plot to work it'll need to be with head 5 and/or tail 5 values.
+
+```{r}
+shs_data_clean %>%
+  filter(age != "All") %>% # want age bands
+  group_by(la_name, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = la_name)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+## Neighbourhood vs All ages
+
+```{r}
+shs_data_la_join %>% # only 446 rows
   filter(measurement == "Percent") %>%
   filter(age == "All") %>% 
   filter(!is.na(neighbourhood_rating)) %>% 
-  count(neighbourhood_rating) %>% 
+  group_by(neighbourhood_rating) %>% 
+  summarise(hood_rating_count = n()) %>% 
   ggplot() +
-  aes(x = age, y = mean_perc) +
+  aes(x = neighbourhood_rating, y = hood_rating_count) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-shs_data_la_join %>% 
-  filter(measurement == "Percent") %>%
-  filter(age != "All") %>% 
-  filter(neighbourhood_rating == "") %>%
-  group_by(age, year) %>% 
-  summarise(mean_perc = count(value)) %>% 
-  ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = age, colour = age)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# shs_data_la_join %>%# only 446 rows so doesn't really work
+#   filter(measurement == "Percent") %>%
+#   filter(age != "All") %>% 
+#   filter(!is.na(neighbourhood_rating)) %>%
+#   group_by(neighbourhood_rating, year) %>% 
+#   summarise(hood_rating_count = n()) %>%  
+#   ggplot() +
+#   geom_line(aes(x = year, y = hood_rating_count, group = neighbourhood_rating, colour = neighbourhood_rating)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
 ```
+
+```{r}
+# shs_data_la_join %>% # only 446 rows
+#   filter(measurement == "Percent") %>%
+#   filter(!is.na(household_type)) %>% 
+#   group_by(neighbourhood_rating) %>% 
+#   summarise(hood_rating_count = n()) %>% 
+#   ggplot() +
+#   aes(x = household_type, y = house_type_count) +
+#   geom_col() +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
 
 
 ```{r}
@@ -386,10 +574,52 @@ shs_data_la_join %>%
 
 ```{r}
 dist_blue_green %>% 
-  filter(distance_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
   group_by(ethnicity, date_code) %>% 
   summarise(mean_percentage = mean(value)) %>% 
   arrange(date_code)
 
+```
+
+```How do people in neighbourhoods with good access to green space differ from those who have no good access? ```
+
+```{r}
+shs_data_clean %>%
+  filter(age != "All") %>% # want age bands
+  group_by(age, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = age)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+```{r}
+shs_data_clean %>%
+  #filter(household_type != "All") %>% # want age bands
+  group_by(household_type, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = household_type)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+```{r}
+shs_data_clean %>%
+  filter(simd_quintiles != "All") %>% # want age bands
+  group_by(simd_quintiles, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(walking_time_count = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = simd_quintiles)) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+```{r}
+shs_data_clean %>%
+  filter(la_name == "West Lothian") %>% 
+  filter(year == "2013") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less")
 ```
 
