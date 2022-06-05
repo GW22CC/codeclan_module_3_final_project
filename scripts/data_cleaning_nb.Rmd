@@ -62,16 +62,6 @@ shs_proportions_data_join <- dist_blue_green %>%
   rename("year" = "date_code")
 
 ```
-```{r}
-names(shs_proportions_data_join)
-```
-
-
-```{r}
-names(shs_aggregate_responses_data)
-
-```
-
 
 ```{r}
 # joining with data zones table by la_code to have Local Authority names
@@ -83,11 +73,9 @@ shs_data_la_join <- shs_proportions_data_join %>%
   left_join(data_zones_trim, by = c("feature_code" = "la_code")) %>% 
   mutate(la_name = if_else(feature_code == "S92000003", "Scotland", la_name)) 
 
-shs_proportions_data_clean <- shs_proportions_data_join # re-assigning cleaned data to explicity object
+shs_proportions_data_clean <- shs_data_la_join # re-assigning cleaned data to explicity object
 
 shs_aggregate_responses_data_clean <- shs_aggregate_responses_data
-
-# shs_data_la_join %>% filter(is.na(la_name)) %>% distinct(feature_code) # sense check for any missing la_name vals and associated feature_code
 
 ```
 

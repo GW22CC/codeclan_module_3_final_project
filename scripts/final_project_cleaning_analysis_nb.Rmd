@@ -54,337 +54,171 @@ We would like to to help us gain insights into how people feel about their local
 
 ### Visualisation
 
-Focus on age, gender, household type, simd quintiles, urban or rural, and as extension ethnicity, disabled, local authority, religion.
+Focus on age, gender, household type, simd quintiles, urban or rural, and as extension ethnicity, disabled, local authority, religion. << refine list
 
 I am defining "local access" as 5 minutes or less because i think that seems reasonable and 11+ is open ended so could be an hour for example. Based on research I see that the 5 minute walk is used in the national indicator.
 
 ```Are there certain groups that have local access to green space (5 min or less)? Are there groups that are lacking access (10 min+)?```
 
+Lucky that edinburgh has so much greenspace ~44%.
+
+Slide to show radius of walking times from Codeclan and what that means for people.
+
+What would be the benefits of quicker access to greenspace? Access to these spaces important for health, community, etc. and recently during lockdown etc. especially for people without a garden. Important to provide evidenec for importance of these spaces given pressures on local budgets and the development pressure on green spaces.
+
+## Access to green space for all people over time
+
+```{r}
+shs_aggregate_responses_data_clean %>% 
+  group_by(year) %>% 
+  count(walking_time_to_nearest_green_or_blue_space) %>% 
+  mutate(proportion = n/sum(n)) %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
+  ggplot() +
+  aes(x = year, y = proportion) +
+  geom_line() +
+  xlab(("Good local access (<5mins walk) to nearest green or blue space")) +
+  ylab("Proportion (%) of respondents") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_x_discrete(limits = c(2012:2019))
+
+```
+Interpretation
+
+Sharp increase 2012 to 2013 deom 35% to 70% then dips in 2017 and 2018 then up. Unclear why and may be by chance issuing of surveys to rural and urban respondents.
+
 ## Age 
 
 ### Plots w/ Age
 
+The plot of walking time to nearest green space vs. age group is showing the proportions of respondents within each age group in order to correct for different numbers of respondents within the groups in the random survey.
+
 ```{r}
-shs_aggregate_responses_data_clean %>% # "Don't know" == "More than 30..", needs to be proportion to correct for diff response rates within groups, shorten cat names
-  group_by(age, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(group_respondents = sum(n_persons)) %>% 
+shs_aggregate_responses_data_clean %>% 
+  group_by(age) %>% 
+  count(walking_time_to_nearest_green_or_blue_space) %>% 
+  mutate(Proportion = n/sum(n)*100) %>%
   ggplot() +
-  aes(x = walking_time_to_nearest_green_or_blue_space, y = group_respondents, fill = age) +
+  aes(x = walking_time_to_nearest_green_or_blue_space, y = Proportion, fill = age) +
   geom_col(position = "dodge") +
+  xlab(("Walking time (mins) to nearest green or blue space")) +
+  ylab("Proportion (%) of respondents") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know"))
 
-# Tom's code
-# shs_responses_clean %>% 
-#   group_by(distance_to_nearest_green_space) %>% 
-#   count(age) %>%
-#   mutate(n = n/sum(n)) %>% 
-#   ggplot() + 
-#   aes(x = distance_to_nearest_green_space, y = n, fill = age ) +
-#   geom_col()
-
-# shs_aggregate_responses_data_clean %>% # needs to be a proportion as varying number of annual respondents, unclear why 2012 different - olympic investment in Scotland?
-#   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-#   group_by(age, year) %>% 
-#   summarise(total_respondents = sum(n_persons)) %>% 
-#   ggplot() +
-#   geom_line(aes(x = year, y = total_respondents, group = age, colour = age)) +
-#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-#   ggtitle("Mean % of people within 5 minutes or less of green space vs. age")
-# 
-# shs_aggregate_responses_data_clean %>% 
-#   filter(year == 2012) %>% 
-#   distinct(walking_time_to_nearest_green_or_blue_space)
-
-
 ```
 
-Interpretation: ***update for proportional comparisons***
+### Interpretation
 
-Adults 35-64 years old age group have greater local access to green or blue space compared to (65+) elderly. The 16-34 year old age group generally have similar access to 35-64 however access is similar to elderly in 2015 and 2016 - currently unclear why.
+Within in all age groups just over half of respondents have their nearest green or blue space within 5 minutes. The difference between 16-34 and 65+ IS/ISN'T signifciant. Majority (80-85%) have access within 10 minutes however X% respondents over 20 minutes away!
 
-The question/measure used is the time it takes to get to each area and so the distance may be the same for each age group but differences in walking speed may explain this. 
+The question/measure used is the time it takes to get to each area and so the distance may be the same for each age group but differences in walking speed may explain this. So people just inside each category boundary may travel similar distances. Also people could estiamte the time wrong. A better way to do it would probably be to use people's postcodes and calculate from digitised green space polygons in GIS software - this would also remove human estiamte error.
 
 Discussion:
 
 mean comfortable gait speed ranged from 127.2 cm/s for women in their seventies to 146.2 cm/s for men in their forties so younger on average walking 15% faster which could support idea of an artificial difference in distance.
 
-Walking speed in elderly can be related to inactivity thus highlighting the importance of remaining active.
+Insights:
+
+How can we shift proportions left in relation to this partcular analysis?
+
+More green spaces in areas where old people live. (Does other analysis show that they will use it?)
+
+Improvements in fitness will open up more areas for older: Walking speed in elderly can be related to inactivity thus highlighting the importance of remaining active.
 
 ### Statistical testing vs. Age
-
-Is there a significant time trend in the proportion of young people within local access to green space? 
-
-```{r}
-# library(trend)
-adult_trend_test <- shs_data_clean %>%
-  filter(age != "All", age == "35-64 years") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(age, year) %>% 
-  summarise(mean_perc = mean(value))
-
-adult_perc <- ts(data = adult_trend_test %>% pull(mean_perc), start=2013)
-bartels.test(adult_perc)
-
-```
-
-```{r}
-trend_test_age <- shs_data_clean %>%
-  filter(age != "All", age == "35-64 years") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(year) %>% 
-  arrange(year)
-
-time <- trend_test_age %>% pull(year)
-perc_means <- trend_test_age %>% pull(value)
-X0 <- time + perc_means
-
-notrend_test(X0)
-
-```
-
-
-
-
-```{r}
-dist_age_test <- shs_data_clean %>% 
-  filter(age != "All", age == "16-34 years", walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
-  select(year, feature_code, value, age) %>% 
-  
-
-dist_age_test %>% 
-  ggplot() +
-  aes(x = year, y = value) +
-  geom_point()
-
-dist_age_test %>% 
-  group_by(age, year) %>% 
-  summarise(mean_val = mean(value),
-            sd_val = sd(value),
-            min_val = min(value),
-            max_val = max(value),
-            sample = n())
-```
-
-Testing the time series (year) linear trend of mean proportions within age group.
-
-```{r}
-# Testing for linear trend
-notrend_test()
-
-```
-
-
-```{r}
-dist_model <- dist_blue_green %>% 
-  filter(measurement == "Percent", age == "35-64 years", distance_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  select(feature_code, date_code, value, gender, age, distance_to_nearest_green_or_blue_space) %>%
-  group_by(date_code) %>% 
-  summarise(mean_prop = mean(value)) %>% 
-  ggplot() +
-  aes(x = date_code, y = mean_prop) +
-  geom_line()
-
-```
-
-### Statistical tests w/ Age
-
-```{r}
-shs_data_clean %>% 
-  filter(age != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(age, year) %>% 
-  summarise(mean_perc = mean(value))
-
-# H0 - There is no difference in the mean perc of 35-64 year old vs. 65 and over access to green/blue space within 5 min walk.
-
-shs_age_data <- shs_data_clean %>% 
-  filter(age != "All", age != "16-34 years") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
-  group_by(age, year) %>% 
-  summarise(mean_perc = mean(value))
-
-null_distribution <- shs_age_data %>% 
-  specify(mean_perc ~ age) %>% # the relationship being tested
-  hypothesize(null = "independence") %>% # the null hypothesis is no relationship / independent
-  generate(reps = 1000, type = "permute") %>% 
-  calculate(stat = "diff in means", order = c("35-64 years", "65 years and over"))
-
-null_distribution %>% slice_min(stat, n = 5)
-
-head(null_distribution)
-
-observed_stat <- shs_age_data %>% 
-  specify(mean_perc ~ age) %>%
-  calculate(stat = "diff in means", order = c("35-64 years", "65 years and over"))
-
-null_distribution %>%
-  visualise() +
-  shade_p_value(direction = "both", obs_stat = observed_stat)
-
-null_distribution %>%
-  get_p_value(direction = "both", obs_stat = observed_stat)
-
-```
-
-
-
-```{r}
-shs_data_clean %>%
-  #filter(measurement == "Percent") %>%
-  filter(age != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
-  group_by(age) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  aes(x = age, y = mean_perc) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-shs_data_clean %>% 
-  #filter(measurement == "Percent") %>%
-  filter(age != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
-  group_by(age, year) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = age, colour = age)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-
-
-## Ethnicity
-
-```{r}
-shs_data_clean %>%
-  #filter(measurement == "Percent") %>%
-  filter(ethnicity != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(ethnicity) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  aes(x = ethnicity, y = mean_perc) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-shs_data_clean %>% 
-  #filter(measurement == "Percent") %>%
-  filter(ethnicity != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(ethnicity, year) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = ethnicity, colour = ethnicity)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-Interpetation:
-
-White ethnicity have greater access than non-white and this trend is consistent albeit to varying degrees across the years 2013-2019.
-
-```{r}
-shs_data_clean %>%
-  #filter(measurement == "Percent") %>%
-  filter(ethnicity != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
-  group_by(ethnicity) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  aes(x = ethnicity, y = mean_perc) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-shs_data_clean %>% 
-  #filter(measurement == "Percent") %>%
-  filter(ethnicity != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "An 11 minute walk or more") %>%
-  group_by(ethnicity, year) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = ethnicity, colour = ethnicity)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
 
 ## Gender (note - these cats may have changed in recent years so review)
 
 ```{r}
-shs_data_clean %>%
-  #filter(measurement == "Percent") %>%
-  filter(gender != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+shs_aggregate_responses_data_clean %>% 
   group_by(gender) %>% 
-  summarise(mean_perc = mean(value)) %>% 
+  count(walking_time_to_nearest_green_or_blue_space) %>% 
+  mutate(Proportion = n/sum(n)*100) %>%
   ggplot() +
-  aes(x = gender, y = mean_perc) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-shs_data_clean %>% 
-  #filter(measurement == "Percent") %>%
-  filter(gender != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(gender, year) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = gender, colour = gender)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  aes(x = walking_time_to_nearest_green_or_blue_space, y = Proportion, fill = gender) +
+  geom_col(position = "dodge") +
+  xlab(("Walking time (mins) to nearest green or blue space")) +
+  ylab("Proportion (%) of respondents") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know"))
 
 ```
 
 Interpretation:
 
-Males have greater access to local green or blue space and although this difference is marginal (~2%) it is a consitent trend across the years 2013-2019.
+Marginal gender differences in access to greenspace in all walking time bands which is probably unsurprising given the general composition and unform distribution of gender in the population.
 
+I could foresee differences in utilisation among genders possibly related to saftey and security - line of sight, sensitive illumination and CCTV may help. Also greater use by families in teh area might enbcourage femlae use.
 
 ## Household type
 
 ```{r}
-shs_data_clean %>%
-  #filter(measurement == "Percent") %>%
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+shs_proportions_data_clean %>% 
+  filter(household_type != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space != "All") %>% 
   group_by(household_type) %>% 
-  summarise(mean_perc = mean(value)) %>% 
+  count(walking_time_to_nearest_green_or_blue_space) %>% 
+  mutate(Proportion = n/sum(n)*100) %>%
   ggplot() +
-  aes(x = household_type, y = mean_perc) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  aes(x = walking_time_to_nearest_green_or_blue_space, y = Proportion, fill = household_type) +
+  geom_col(position = "dodge") +
+  xlab(("Walking time (mins) to nearest green or blue space")) +
+  ylab("Proportion (%) of respondents") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "An 11 minute walk or more", "Don't know")) # why is Don't know not showing
 
-shs_data_clean %>% 
-  #filter(measurement == "Percent") %>%
-  #filter(gender != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(household_type, year) %>% 
-  summarise(mean_perc = mean(value)) %>% 
+```
+
+
+Interpretation:
+
+Households with children generally have the greatest access to local green or blue space although this is only a few percent greater than adult or pensioner only households. Pensions have the lowest access to local green or blue space but it does not appear significant.
+
+Given that we know families are present in these areas, we would want to analyse utilisation, and if low we could perhaps encourage them in with playparks for example and this might help with encouraging other groups, e.g. females. 
+
+## Household size
+
+```{r}
+shs_aggregate_responses_data_clean %>% 
+  group_by(household_size) %>% 
+  count(walking_time_to_nearest_green_or_blue_space) %>% 
+  mutate(Proportion = n/sum(n)*100) %>%
+  mutate(household_size = as.character(household_size)) %>% 
   ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = household_type, colour = household_type)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  aes(x = walking_time_to_nearest_green_or_blue_space, y = Proportion, fill = household_size) +
+  geom_col(position = "dodge") +
+  xlab(("Walking time (mins) to nearest green or blue space")) +
+  ylab("Proportion (%) of respondents") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know"))
 
 ```
 
 Interpretation:
 
-Households with children have the greatest access to local green or blue space although this is marginally greater than adult only households. Pensions have the lowest access to local green or blue space. The trend across all household types is of decreasing access to outdoor space although the difference from start (2013) to end (2019) is marginal.
+Between 50-60% respondents in households of all sizes are within 5 mins of green space. The difference between larger households to smallest appears to be about 10% when the outlying 8 and 10 person households are excluded. Majority of people within 10 minutes. 
+
+Households with more people have the greatest access to local green or blue space although this is marginally greater than adult only households. Pensions have the lowest access to local green or blue space. The trend across all household types is of decreasing access to outdoor space although the difference from start (2013) to end (2019) is marginal.
 
 ## SIMD
 
+The SIMD quintiles per year analysis is based on the mean percent of adult respondents in the simd percentiles categories across all feature code/local authorities. 
+
 ```{r}
-shs_data_clean %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(simd_quintiles != "All") %>% 
   group_by(simd_quintiles) %>% 
-  summarise(mean_perc = mean(value)) %>% 
+  summarise(mean_proportion = mean(value)) %>% 
   ggplot() +
-  aes(x = simd_quintiles, y = mean_perc) +
+  aes(x = simd_quintiles, y = mean_proportion) +
   geom_col() +
+  ylab("Mean percentage (%)") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_clean %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(simd_quintiles != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
@@ -392,7 +226,10 @@ shs_data_clean %>%
   summarise(mean_perc = mean(value)) %>% 
   ggplot() +
   geom_line(aes(x = year, y = mean_perc, group = simd_quintiles, colour = simd_quintiles)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  scale_x_discrete(limits = c(2012:2019)) +
+  ylab("Mean percentage (%)")
+
 ```
 
 Interpretation:
@@ -402,7 +239,7 @@ The 80% least deprived have greater access to local green or outdoor space then 
 ## Urban or rural
 
 ```{r}
-shs_data_la_join %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(urban_rural_classification != "All") %>% 
@@ -413,7 +250,7 @@ shs_data_la_join %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_la_join %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(urban_rural_classification != "All") %>% 
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
@@ -433,7 +270,7 @@ Respondents living in rural areas have greater access to local green or outdoor 
 ## Local Authority (LA)
 
 ```{r}
-shs_data_clean %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(la_name != "All") %>% 
@@ -444,7 +281,7 @@ shs_data_clean %>%
   geom_col() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-shs_data_clean %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   filter(la_name != "All") %>% 
@@ -453,7 +290,7 @@ shs_data_clean %>%
   arrange(desc(mean_perc)) %>% 
   head(5)
 
-shs_data_clean %>% 
+shs_proportions_data_clean %>% 
   #filter(measurement == "Percent") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
   group_by(la_name, year) %>% 
@@ -471,335 +308,63 @@ The range of variation in access to local green or blue areas between local auth
 
 ```Are there big differences in how far people have to walk to access their green space?```
 
-What is the time category proportion to green or blue space for the age groups with different access?
+What is the time category proportion to green or blue space for the urban and rural groups with different access?
 
 ```{r}
-shs_data_clean %>%
-  filter(age != "All") %>% # want age bands
-  group_by(age, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = age)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-```
-
-What is the time category proportion to green or blue space for the ethnicity groups with different access?
-
-```{r}
-shs_data_clean %>%
-  filter(ethnicity != "All") %>% # want age bands
-  group_by(ethnicity, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = ethnicity)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-```
-
-Gender
-
-```{r}
-shs_data_clean %>%
-  filter(gender != "All") %>% # want age bands
-  group_by(gender, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = gender)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-```
-
-```{r}
-shs_data_clean %>%
-  filter(household_type != "All") %>% # want age bands
-  group_by(household_type, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = household_type)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-```
-```{r}
-shs_data_clean %>%
-  filter(simd_quintiles != "All") %>% # want age bands
-  group_by(simd_quintiles, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = simd_quintiles)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-```
-```{r}
-shs_data_clean %>%
+shs_proportions_data_clean %>%
   filter(urban_rural_classification != "All") %>% # want age bands
+  filter(walking_time_to_nearest_green_or_blue_space != "All") %>%
   group_by(urban_rural_classification, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = urban_rural_classification)) +
+  summarise(n = n(), mean_perc = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = mean_perc, fill = urban_rural_classification)) +
   geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("A 5 minute walk or less", "Within a 6-10 minute walk", "An 11 minute walk or more", "Don't know")
+
+
 ```
 
-
-For this plot to work it'll need to be with head 5 and/or tail 5 values.
-
 ```{r}
-shs_data_clean %>%
+shs_proportions_data_clean %>%
   filter(age != "All") %>% # want age bands
-  group_by(la_name, walking_time_to_nearest_green_or_blue_space) %>% 
+  group_by(feature_code, walking_time_to_nearest_green_or_blue_space) %>% 
   summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = la_name)) +
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = feature_code)) +
   geom_col(position = "dodge") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-```
-
-
-## Neighbourhood vs All ages
-
-```{r}
-shs_data_la_join %>% # only 446 rows
-  filter(measurement == "Percent") %>%
-  filter(age == "All") %>% 
-  filter(!is.na(neighbourhood_rating)) %>% 
-  group_by(neighbourhood_rating) %>% 
-  summarise(hood_rating_count = n()) %>% 
-  ggplot() +
-  aes(x = neighbourhood_rating, y = hood_rating_count) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-# shs_data_la_join %>%# only 446 rows so doesn't really work
-#   filter(measurement == "Percent") %>%
-#   filter(age != "All") %>% 
-#   filter(!is.na(neighbourhood_rating)) %>%
-#   group_by(neighbourhood_rating, year) %>% 
-#   summarise(hood_rating_count = n()) %>%  
-#   ggplot() +
-#   geom_line(aes(x = year, y = hood_rating_count, group = neighbourhood_rating, colour = neighbourhood_rating)) +
-#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ```
 
-```{r}
-# shs_data_la_join %>% # only 446 rows
-#   filter(measurement == "Percent") %>%
-#   filter(!is.na(household_type)) %>% 
-#   group_by(neighbourhood_rating) %>% 
-#   summarise(hood_rating_count = n()) %>% 
-#   ggplot() +
-#   aes(x = household_type, y = house_type_count) +
-#   geom_col() +
-#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-```
-
-
-
-```{r}
-shs_data_la_join %>%
-  filter(gender != "NA" & gender != "All") %>%
-  ggplot() +
-  aes(x = gender, y = local_access) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-
-shs_data_la_join %>%
-  filter(ethnicity != "All") %>%
-  ggplot() +
-  aes(x = ethnicity, y = local_access) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-
-shs_data_la_join %>%
-  filter(household_type != "All") %>%
-  ggplot() +
-  aes(x = household_type, y = local_access) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-
-shs_data_la_join %>%
-  filter(simd_quintiles != "All") %>%
-  ggplot() +
-  aes(x = simd_quintiles, y = local_access) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-
-shs_data_la_join %>% 
-  distinct(urban_rural_classification)
-
-```
-
-What there big differences in how far people have to walk to access their green space?
-
-```{r}
-shs_data_la_join %>%
-  filter(measurement == "Percent") %>%
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  filter(walking_distance_to_nearest_greenspace != "All") %>% 
-  ggplot() +
-  aes(x = la_name, fill = walking_distance_to_nearest_greenspace) +
-  geom_bar() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-Are there any differences between rural and urban areas?
-
-```{r}
-shs_data_la_join %>%
-  filter(urban_rural_classification != "All") %>%
-  ggplot() +
-  aes(x = urban_rural_classification, y = local_access) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
-
-```
-
-```{r}
-dist_blue_green %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
-  group_by(ethnicity, date_code) %>% 
-  summarise(mean_percentage = mean(value)) %>% 
-  arrange(date_code)
-
-```
+## Modelling
 
 ```How do people in neighbourhoods with good access to green space differ from those who have no good access? ```
 
-```{r}
-shs_data_clean %>%
-  filter(age != "All") %>% # want age bands
-  group_by(age, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = age)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-```
-
-
-```{r}
-shs_data_clean %>%
-  #filter(household_type != "All") %>% # want age bands
-  group_by(household_type, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = household_type)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-```
-
-```{r}
-shs_data_clean %>%
-  filter(simd_quintiles != "All") %>% # want age bands
-  group_by(simd_quintiles, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = simd_quintiles)) +
-  geom_col(position = "dodge") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-```
-
-```{r}
-shs_data_clean %>%
-  filter(la_name == "West Lothian") %>% 
-  filter(year == "2013") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less")
-```
-
-```{r}
-
-shs_data_clean %>%
-  #filter(measurement == "Percent") %>%
-  filter(age != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(age) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  aes(x = age, y = mean_perc) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-shs_data_clean %>% 
-  #filter(measurement == "Percent") %>%
-  filter(age != "All") %>% 
-  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
-  group_by(age, year) %>% 
-  summarise(mean_perc = mean(value)) %>% 
-  ggplot() +
-  geom_line(aes(x = year, y = mean_perc, group = age, colour = age)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  ggtitle("Mean % of people within 5 minutes or less of green space vs. age")
-
-
-```
-
-Community belonging exploration:
-
-```{r}
-shs_data_clean %>% 
-  filter(!is.na(community_belonging)) %>% 
-  
-
-```
-
-
-## Logistic Regression
-
-Explanatory model for people who responded with "" to community belonging (across all LA authorities for all years).
-
-```{r}
-shs_data_clean %>%
-  filter(community_belonging == "Very strongly") %>%
-  filter(gender != "All") %>% 
-  select(community_belonging, la_name, year, gender) %>% 
-  distinct()
-  
-```
-
-```{r}
-shs_agg_resp <- read_csv("../raw_data/shs_aggregate_responses.csv")
-
-shs_agg_resp %>% 
-  filter(!is.na(nearest_green_space_use))
-
-shs_agg_resp %>% 
-  group_by(year) %>% 
-  summarise(n = n())
-
-shs_agg_resp %>% 
-  distinct(volunteering_last_twelve_months)
-
-glimpse(shs_agg_resp)
-
-```
-
-Q. How do people in neighbourhoods with good access to green space differ from those who have no good access?
-
 How do people in neighbourhoods with [green space == "A 5 minute walk or less"] differ from those who have [green space > A 10 minute walk], i.e. What are the variable combinations that predict these opposite outcomes?
 
-Explanatory model
-
-I will use logistic regression because all the variables, predictors and outcomes, are categorical.
-
 'local_access_to_green' will be the binary dependent variable denoting whether respondents live within a 5 minute walk of a green space.
+
+Decision trees are slightly easier to prepare in one aspect: it’s not necessary to scale the data. 
+
+Steps in decision tree model build:
+
+- remove NAs
+- variable reduction, e.g. selecting variables columns directly connected to outcome and some which are totally redundant or irrelevant
+- variable engineering, e.g. set important variables to type factor and replace the numeric values with strings for interpretability
+
+Remember to visualise pairings to subset the most apparently good predictors to build model.
 
 ```{r}
 library(rpart)
 library(rpart.plot)
-library(tidyverse)
-
-```
-```{r}
-head(shs_agg_resp)
 
 ```
 
-Decision trees are slightly easier to prepare in one aspect: it’s not necessary to scale the data. 
-
 ```{r}
-shs_local_green_space_access_groups_1 <- shs_agg_resp %>% 
-  rename("walking_time_to_nearest_green_space" = "distance_to_nearest_green_space") %>% 
-  filter(!is.na(walking_time_to_nearest_green_space)) %>% 
-  mutate(local_access_to_green = if_else(walking_time_to_nearest_green_space == "A 5 minute walk or less", "Yes", "No"), .after = walking_time_to_nearest_green_space) %>% 
-  select(-year, walking_time_to_nearest_green_space, n_persons) %>% # remove n_persons after duplicated rows
-  mutate(community_belonging = as.factor(community_belonging),
+shs_engineered_for_model <- shs_aggregate_responses_data_clean %>% 
+  filter(!is.na(walking_time_to_nearest_green_or_blue_space)) %>% # removed NAs prior to engineering of binary target var
+  mutate(local_access_to_green = if_else(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less", "Yes", "No"), .after = walking_time_to_nearest_green_or_blue_space) %>% # creating binary target var through engineering
+  select(-c(year, walking_time_to_nearest_green_or_blue_space)) %>% # variable reduction
+  mutate(community_belonging = as.factor(community_belonging), # variable engineering
          neighbourhood_rating = as.factor(neighbourhood_rating),
          local_access_to_green = as.factor(local_access_to_green),
          satisfaction_with_nearest_green_space = as.factor(satisfaction_with_nearest_green_space),
@@ -809,60 +374,95 @@ shs_local_green_space_access_groups_1 <- shs_agg_resp %>%
          household_size = as.factor(household_size),
          highest_education_level = as.factor(highest_education_level),
          nearest_green_space_use = as.factor(nearest_green_space_use),
-         volunteering_last_twelve_months = as.factor(volunteering_last_twelve_months)) %>% 
-  drop_na() %>% 
-  filter(n_persons == 1)
+         volunteering_last_twelve_months = as.factor(volunteering_last_twelve_months)) %>% # drier code with lapply
+  drop_na()
 
-shs_local_green_space_access_groups_greater_1 <- shs_agg_resp %>% 
-  
-  
-  rename("walking_time_to_nearest_green_space" = "distance_to_nearest_green_space") %>% 
-  filter(!is.na(walking_time_to_nearest_green_space)) %>% 
-  mutate(local_access_to_green = if_else(walking_time_to_nearest_green_space == "A 5 minute walk or less", "Yes", "No"), .after = walking_time_to_nearest_green_space) %>% 
-  select(-year, walking_time_to_nearest_green_space, n_persons) %>% # remove n_persons after duplicated rows
-  mutate(community_belonging = as.factor(community_belonging),
-         neighbourhood_rating = as.factor(neighbourhood_rating),
-         local_access_to_green = as.factor(local_access_to_green),
-         satisfaction_with_nearest_green_space = as.factor(satisfaction_with_nearest_green_space),
-         age = as.factor(age),
-         gender = as.factor(gender),
-         economic_status = as.factor(economic_status),
-         household_size = as.factor(household_size),
-         highest_education_level = as.factor(highest_education_level),
-         nearest_green_space_use = as.factor(nearest_green_space_use),
-         volunteering_last_twelve_months = as.factor(volunteering_last_twelve_months)) %>% 
-  drop_na() %>% 
-  filter(n_persons > 1) 
-
-row_rep <- data.frame(lapply(shs_local_green_space_access_groups_greater_1, rep, shs_local_green_space_access_groups_greater_1$n_persons))
-
-disaggregated_responses <- bind_rows(shs_local_green_space_access_groups_1, row_rep) %>% select(-c(n_persons, walking_time_to_nearest_green_space, nearest_green_space_use, satisfaaction_with_nearest_green_space))
-
-```
-
-```{r}
-ggpairs(disaggregated_responses, columns = 1:6)
 ```
 
 
 ```{r}
-ggpairs(disaggregated_responses, columns = 6:10)
+shs_group_size_one <- shs_engineered_for_model %>% 
+  filter(n_persons == 1) # data split for rows which don't need duplicated
+
+shs_group_size_greater_than_one <- shs_engineered_for_model %>% 
+  filter(n_persons > 1) # # data split for rows to be repeated using values in n_persons
+
+repeated_rows_df <- data.frame(lapply(shs_group_size_greater_than_one, rep, shs_group_size_greater_than_one$n_persons))  # disaggregating rows based on group size in n_persons
+
+shs_disaggregated_for_model <- bind_rows(shs_group_size_one, repeated_rows_df) %>% 
+  select(-c(n_persons)) # remove n_persons after duplicated rows
 
 ```
+
+Plots to identify which variables might be useful to predict whether people have good access to local green space
+
+***should this be a proportion to aid the comparison? The interpretation of this plot needs some thought***
+
+```{r}
+names(shs_disaggregated_for_model)
+
+shs_disaggregated_for_model %>% 
+  select(local_access_to_green, economic_status) %>% 
+  group_by(local_access_to_green, economic_status) %>% 
+  summarise(total_count = n()) %>% 
+  ggplot() +
+  aes(x = local_access_to_green, y = total_count, fill = economic_status) +
+  geom_col(position = "dodge") #+
+  xlim("Full Time Employment", "Part Time Employment", "Self Employed", "Training", "Retired", "Other") # retired wealth unknown
+  
+
+```
+
+Interpretation: the pattern for economic status and local access to green or not is the same so it doesn't seem like a good predictor.
+
+```{r}
+shs_disaggregated_for_model %>% 
+  select(local_access_to_green, nearest_green_space_use) %>% 
+  group_by(local_access_to_green, nearest_green_space_use) %>% 
+  summarise(total_count = n()) %>% 
+  ggplot() +
+  aes(x = local_access_to_green, y = total_count, fill = nearest_green_space_use) +
+  geom_col(position = "dodge")
+
+```
+
+Interpretation: the pattern for utilisation and local access to green or not is differnt so it does seem like a good predictor although I would expect to the two to be correlated.
+
+```{r}
+shs_disaggregated_for_model %>% 
+  select(local_access_to_green, age) %>% 
+  group_by(local_access_to_green, age) %>% 
+  summarise(total_count = n()) %>% 
+  ggplot() +
+  aes(x = local_access_to_green, y = total_count, fill = age) +
+  geom_col(position = "dodge")
+
+```
+
+Interpretation: the pattern for age and local access to green or not is different so it does seem like a good predictor.
+
+```{r}
+# shs_disaggregated_for_model %>% 
+#   select(-c(nearest_green_space_use, economic_status, age)) %>% 
+#   ggpairs()
+
+```
+ggpairs plots show commnity_belonging, neighbourhood rating, gender, volunteering
 
 
 ```{r}
 # get how many rows we have in total to work out the percentage
-n_data <- nrow(disaggregated_responses)
+n_data <- nrow(shs_disaggregated_for_model)
 
 # create a test sample index
 test_index <- sample(1:n_data, size = n_data*0.2)
 
 # create test set
-disaggregated_responses_test  <- slice(disaggregated_responses, test_index)
+disaggregated_responses_test  <- slice(shs_disaggregated_for_model, test_index)
 
 # create training set
-disaggregated_responses_train <- slice(disaggregated_responses, -test_index)
+disaggregated_responses_train <- slice(shs_disaggregated_for_model, -test_index)
+
 ```
 
 ```{r}
@@ -886,42 +486,201 @@ shs_fit <- rpart(
 rpart.plot(shs_fit, 
            yesno = 2, 
            fallen.leaves = TRUE, 
-           faclen = 6, 
+           faclen = 4, 
            digits = 4)
 
 ```
 
+Interpretation:
+
+People who like to use green spaces almost every day tend to live very close to them. People who use parks once a week or fortnight, or less or made up of people ranging from Very satisfied	to Very dissatisfied so it seems it depends on the person as to extent but people will go to green space if it's there no matter what satisfaction level. ***remove No opinion?***
+
+
+### Utilisation of green space among those satisfied with condition
 
 ```{r}
-glimpse(shs_local_green_space_access)
-
-ggpairs(shs_local_green_space_access, columns = c(5, 6:12))
+shs_disaggregated_for_model %>% distinct(satisfaction_with_nearest_green_space)
+shs_disaggregated_for_model %>% distinct(nearest_green_space_use)
 
 ```
 
-ggpairs plots show commnity_belonging, neighbourhood rating, distance to nearest green space, age, highest education level, economic status
 
 ```{r}
-shs_local_green_space_access %>%
+shs_disaggregated_for_model %>%
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied")) %>% 
+  #count(nearest_green_space_use) %>% 
   ggplot() +
-  geom_boxplot(aes(x = household_size, y = as.integer(local_access_to_green))) + 
-  ylab("Good local access") + 
-  scale_y_continuous(breaks=seq(0, 1,1))
+  aes(x = nearest_green_space_use) +
+  geom_bar() +
+  ggtitle("Utilisation of Nearest green space usage by respondents \"Fairly satisfied\" \n or \"Very satisfied\" with condition") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+  
+
+```
+
+Interpreatation:
+
+Ratio of 1-2 days to not at all is 4:1 in those to some degree satisfied.
+
+```{r}
+shs_disaggregated_for_model %>%
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied")) %>% 
+  count(nearest_green_space_use) %>% 
+  mutate(prop = n/sum(n)*100) %>% 
+  arrange(desc(prop))
+
+```
+
+
+Intepretation:
+
+Most people (45%) who like their green space use it every 1-2 days. 
+25% use it once per week or fortnight.
+Nearly 30% once a month, less or not at all.
+
+It is unclear if the most frequent users are commuters or leisure. 
+
+```{r}
+shs_disaggregated_for_model %>% distinct(satisfaction_with_nearest_green_space)
+
+shs_disaggregated_for_model %>%
+  mutate(dissatisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>% 
+  count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = dissatisfied_with_nearest_green) +
+  geom_bar() +
+  ggtitle("Utilisation of Nearest green space usage by respondents who are \"Fairly dissatisfied\" or \"Very dissatisfied\" with condition") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+  
+
+```
+
+***facet the utilisation plots by satisfaction? (reduced cats for ease of comparison)*** 
+
+```{r}
+shs_disaggregated_for_model %>%
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied")) %>% 
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use) +
+  geom_bar() +
+  ggtitle("Utilisation of Nearest green space usage by respondents to \n some degree \"dissatisfied\" with condition") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+
+```
+
+Interpretation: 
+
+27% who are to some degree dissatisfied with their nearest green space do not use it at all and 20% are once a month or less often. Around 32% use every 1-2 days.
+
+Ratio of 1-2 days to not at all is almost 1:1 in those to some degree dissatisfied.
+
+```{r}
+shs_disaggregated_for_model %>%
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied")) %>% 
+  count(nearest_green_space_use) %>% 
+  mutate(prop = n/sum(n)*100) %>% 
+  arrange(desc(prop))
 
 ```
 
 
 
-Q. Are there differences in how they rate their neighbourhoods? 
 
-For a given value of [access to green space: local or not local] how do people rate thir neighbourhood?
+```{r}
+shs_disaggregated_for_model %>% distinct(nearest_green_space_use)
+
+```
+
+### Utilisation by gender of green space 
+
+```{r}
+shs_disaggregated_for_model %>% 
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied")) %>% 
+  filter(nearest_green_space_use != "Don't know") %>% 
+  group_by(nearest_green_space_use) %>% 
+  count(gender) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, y = prop, fill = gender) +
+  geom_col(position = "dodge") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  facet_wrap(~gender) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+
+```
+
+```{r}
+shs_disaggregated_for_model %>%
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = local_access_to_green) +
+  geom_bar() +
+  facet_wrap(~local_access_to_green) +
+  ggtitle("Utilisation of Nearest green space usage by good local access or not") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+```{r}
+shs_disaggregated_for_model %>%
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
+  geom_bar() +
+  facet_wrap(~satisfied_with_nearest_green) +
+  ggtitle("Utilisation of Nearest green space usage by satisfaction or not") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+
+
+```{r}
+shs_disaggregated_for_model %>%
+  filter(local_access_to_green == "No") %>% 
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied")) %>% 
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use) +
+  geom_bar() +
+  ggtitle("Utilisation of no local green space usage by respondents \"Fairly dissatisfied\" \n or \"Very dissatisfied\" with condition") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+
+```
+
+
+
+```Are there differences in how they rate their neighbourhoods?```
+
+For a given value of [access to green space: local or not local] how do people rate their neighbourhood?
 
 H0 - there is no difference in how people rate their neighbourhood varying with local access to green space?
 
-Q. Are there differences in how they rate their communities?
+Removing nearest green space use from model might help go deeper? Calculate likelihood?
+
+```Q. Are there differences in how they rate their communities?```
 
 H0 - there is no difference in how people rate their neighbourhood varying with local access to green space?
 
-Q. Is there any way to predict which households would have higher ratings?
+Removing nearest green space use from model might help go deeper? Calculate likelihood?
+
+```Q. Is there any way to predict which households would have higher ratings?```
 
 Decision tree - from class notes wk11 day2, "Predicting a category or numerical target value is pretty easy using decision trees."
+
+
+
+
+# Discussion
+
+How can we improve utilisation eof existing greenspaces by people?
+
+How can we improve access to greenspaces for people?
