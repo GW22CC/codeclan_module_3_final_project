@@ -5,7 +5,7 @@ output: html_notebook
 
 # Final Project
 
-## Data cleaning
+## Analysis
 
 ```{r}
 library(tidyverse)
@@ -18,7 +18,6 @@ library(GGally)
 
 ```
 
-
 ```{r}
 shs_proportions_data_clean <- read_csv("../clean_data/shs_proportions_data_clean.csv")
 
@@ -30,8 +29,10 @@ proximity_derelict <- read_csv("../raw_data/shs_population_living_in_close_proxi
 
 ```
 
+### Number respondents per year
+
 ```{r}
-shs_aggregate_responses_data_clean %>% # this needs to reflect pre-filtering
+shs_aggregate_responses_data_clean %>% 
   group_by(year) %>% 
   summarise(total_respondents = sum(n_persons))
 
@@ -65,29 +66,19 @@ We would like to to help us gain insights into how people feel about their local
     Are there groups that are lacking access?
     What there big differences in how far people have to walk to access their green space?
     Are there any differences between rural and urban areas?
-    
-    How do people in neighbourhoods with good access to green space differ from those who have no good access? 
-    Are there differences in how they rate their neighbourhoods? 
-    Are there differences in how they rate their communities?
-    
-    Is there any way to predict which households would have higher ratings?
-
+    Is there any way to characterise people who have good local access to green space?
 
 ### Visualisation
 
-Focus on age, gender, household type, simd quintiles, urban or rural, and as extension ethnicity, disabled, local authority, religion. << refine list
+Explore age, gender, household type, simd quintiles, urban or rural, and as extension ethnicity, disabled, local authority, religion.
 
 I am defining "local access" as 5 minutes or less because i think that seems reasonable and 11+ is open ended so could be an hour for example. Based on research I see that the 5 minute walk is used in the national indicator.
 
 ```Are there certain groups that have local access to green space (5 min or less)? Are there groups that are lacking access (10 min+)?```
 
-Lucky that edinburgh has so much greenspace ~44%.
-
-Slide to show radius of walking times from Codeclan and what that means for people.
-
 What would be the benefits of quicker access to greenspace? Access to these spaces important for health, community, etc. and recently during lockdown etc. especially for people without a garden. Important to provide evidenec for importance of these spaces given pressures on local budgets and the development pressure on green spaces.
 
-Min area of greenspace not defined
+Min area of greenspace definition does not incluide private gvbardens. 
 
 ## Access to green space for all people over time
 
@@ -100,7 +91,7 @@ shs_aggregate_responses_data_clean %>%
   aes(x = year, y = proportion, group = walking_time_to_nearest_green_or_blue_space, colour = walking_time_to_nearest_green_or_blue_space) +
   geom_line() +
   xlab(("Good local access (<5mins walk) to nearest green or blue space")) +
-  ylab("Proportion (%) of respondents") +
+  ylab("Proportion") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   scale_x_discrete(limits = c(2012:2019))
 
@@ -119,14 +110,16 @@ The plot of walking time to nearest green space vs. age group is showing the pro
 shs_aggregate_responses_data_clean %>% 
   group_by(age) %>% 
   count(walking_time_to_nearest_green_or_blue_space) %>% 
-  mutate(Proportion = n/sum(n)*100) %>%
+  mutate(Proportion = n/sum(n)) %>%
   ggplot() +
   aes(x = walking_time_to_nearest_green_or_blue_space, y = Proportion, fill = age) +
   geom_col(position = "dodge") +
-  xlab(("Walking time (mins) to nearest green or blue space")) +
-  ylab("Proportion (%) of respondents") +
+  ggtitle("Proportion of respondents within varying walking times of \n green space by age group") +
+  xlab(("Walking time (mins) to nearest green space")) +
+  ylab("Proportion") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know"))
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know")) +
+  scale_fill_discrete(name = "Age group")
 
 ```
 
@@ -163,7 +156,8 @@ shs_aggregate_responses_data_clean %>%
   xlab(("Walking time (mins) to nearest green or blue space")) +
   ylab("Proportion (%) of respondents") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know"))
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know")) +
+  scale_fill_discrete(name = "Gender")
 
 ```
 
@@ -237,6 +231,7 @@ shs_proportions_data_clean %>%
   ggplot() +
   aes(x = simd_quintiles, y = mean_proportion) +
   geom_col() +
+  ggtitle("Proportion of respondents within 5 mins walk of green space times of \n green space by SIMD quintile") +
   ylab("Mean percentage (%)") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
@@ -248,9 +243,11 @@ shs_proportions_data_clean %>%
   summarise(mean_perc = mean(value)) %>% 
   ggplot() +
   geom_line(aes(x = year, y = mean_perc, group = simd_quintiles, colour = simd_quintiles)) +
+  ggtitle("Proportion of respondents within 5 mins walk of green space times of \n green space by SIMD quintile") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   scale_x_discrete(limits = c(2012:2019)) +
-  ylab("Mean percentage (%)")
+  ylab("Mean percentage (%)") +
+  scale_fill_discrete(name = "SIMD quintile")
 
 ```
 
@@ -337,11 +334,13 @@ shs_proportions_data_clean %>%
   filter(urban_rural_classification != "All") %>% # want age bands
   filter(walking_time_to_nearest_green_or_blue_space != "All") %>%
   group_by(urban_rural_classification, walking_time_to_nearest_green_or_blue_space) %>% 
-  summarise(n = n(), mean_perc = mean(value)) %>% 
+  summarise(n = n(), mean_perc = mean(value), stdev = sd(value)) %>% 
   ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = mean_perc, fill = urban_rural_classification)) +
   geom_col(position = "dodge") +
+  ggtitle("Percentage of respondents within varying walking times of \n green space by urban rural classification") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  xlim("A 5 minute walk or less", "Within a 6-10 minute walk", "An 11 minute walk or more", "Don't know")
+  xlim("A 5 minute walk or less", "Within a 6-10 minute walk", "An 11 minute walk or more", "Don't know") +
+  scale_fill_discrete(name = "Urban rural classification")
 
 
 ```
@@ -349,9 +348,12 @@ shs_proportions_data_clean %>%
 ```{r}
 shs_proportions_data_clean %>%
   filter(age != "All") %>% # want age bands
-  group_by(feature_code, walking_time_to_nearest_green_or_blue_space) %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
+  group_by(la_name, walking_time_to_nearest_green_or_blue_space) %>% 
   summarise(walking_time_count = mean(value)) %>% 
-  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = feature_code)) +
+  arrange(desc(walking_time_count)) %>% 
+  filter(walking_time_count > 78 | walking_time_count < 56) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = walking_time_count, fill = la_name)) +
   geom_col(position = "dodge") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
@@ -502,13 +504,13 @@ disaggregated_responses_train <- slice(shs_disaggregated_for_model, -test_index)
 
 
 ```{r}
-sets$SAMP2 %>%
+disaggregated_responses_test %>%
  janitor::tabyl(local_access_to_green)
 
 ```
 
 ```{r}
-sets$SAMP1 %>%
+disaggregated_responses_train %>%
  janitor::tabyl(local_access_to_green)
 ```
 
@@ -522,8 +524,8 @@ shs_fit <- rpart(
 rpart.plot(shs_fit, 
            yesno = 2, 
            fallen.leaves = TRUE, 
-           faclen = 1, 
-           digits = 1)
+           faclen = 4, 
+           digits = 3)
 
 rpart.rules(shs_fit)
 
@@ -533,14 +535,64 @@ Interpretation:
 
 People who like to use green spaces almost every day tend to live very close to them. People who use parks once a week or fortnight, or less or made up of people ranging from Very satisfied	to Very dissatisfied so it seems it depends on the person as to extent but people will go to green space if it's there no matter what satisfaction level. ***remove No opinion?***
 
-
-### Utilisation of green space among those satisfied with condition
-
 ```{r}
-shs_disaggregated_for_model %>% distinct(satisfaction_with_nearest_green_space)
-shs_disaggregated_for_model %>% distinct(nearest_green_space_use)
+library(modelr)
+
+# add the predictions
+shs_test_pred <- disaggregated_responses_test %>%
+  add_predictions(shs_fit, type = 'class')
 
 ```
+
+```{r}
+
+library(yardstick)
+
+conf_mat <- shs_test_pred %>%
+              conf_mat(truth = local_access_to_green, estimate = pred)
+
+conf_mat
+
+
+```
+
+```{r}
+accuracy <- shs_test_pred %>%
+ accuracy(truth = local_access_to_green, estimate = pred)
+
+accuracy 
+
+
+```
+
+```{r}
+shs_test_pred %>%
+  sensitivity(truth = local_access_to_green, estimate = pred)
+
+```
+```{r}
+shs_test_pred %>%
+  specificity(truth = local_access_to_green, estimate = pred)
+
+```
+
+
+### Utilisation of green space by local access
+
+```{r}
+shs_disaggregated_for_model %>%
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = local_access_to_green) +
+  geom_bar() +
+  facet_wrap(~local_access_to_green) +
+  ggtitle("Utilisation of nearest green space") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  scale_fill_discrete(name = "Local access") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
 
 
 ```{r}
@@ -561,6 +613,24 @@ Interpreatation:
 Ratio of 1-2 days to not at all is 4:1 in those to some degree satisfied.
 
 ```{r}
+shs_disaggregated_for_model %>% 
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied")) %>% 
+  filter(nearest_green_space_use != "Don't know") %>% 
+  group_by(nearest_green_space_use) %>% 
+  count(age) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, y = prop, fill = age) +
+  geom_col(position = "dodge") +
+  ggtitle("Utilisation of green space by age for those satisfied to some degree (any location )") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  #facet_wrap(~age) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+
+```
+
+
+```{r}
 shs_disaggregated_for_model %>%
   filter(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied")) %>% 
   count(nearest_green_space_use) %>% 
@@ -579,15 +649,59 @@ Nearly 30% once a month, less or not at all.
 It is unclear if the most frequent users are commuters or leisure. 
 
 ```{r}
-shs_disaggregated_for_model %>% distinct(satisfaction_with_nearest_green_space)
-
 shs_disaggregated_for_model %>%
-  filter(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied")) %>% 
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
   #count(nearest_green_space_use) %>% 
   ggplot() +
-  aes(x = nearest_green_space_use) +
+  aes(x = nearest_green_space_use, fill = local_access_to_green) +
   geom_bar() +
-  ggtitle("Utilisation of Nearest green space usage by respondents who \n are \"Fairly dissatisfied\" or \"Very dissatisfied\" with condition") +
+  facet_wrap(~local_access_to_green) +
+  ggtitle("Utilisation of nearest green space by access") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+```{r}
+shs_disaggregated_for_model %>%
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  group_by() %>% 
+  count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = gender) +
+  geom_bar() +
+  facet_wrap(~gender) +
+  ggtitle("Utilisation of nearest green space by access") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+```{r}
+shs_disaggregated_for_model %>%
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
+  geom_bar() +
+  facet_wrap(~satisfied_with_nearest_green) +
+  ggtitle("Utilisation of Nearest green space usage by satisfaction or not (by all access)") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+
+
+```{r}
+
+shs_disaggregated_for_model %>%
+  filter(local_access_to_green == "Yes") %>% 
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
+  geom_bar() +
+  facet_wrap(~satisfied_with_nearest_green) +
+  ggtitle("Utilisation of nearest green space by satisfaction \n w/ good access") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
   
@@ -595,19 +709,6 @@ shs_disaggregated_for_model %>%
 ```
 
 ***facet the utilisation plots by satisfaction? (reduced cats for ease of comparison)*** 
-
-```{r}
-shs_disaggregated_for_model %>%
-  filter(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied")) %>% 
-  #count(nearest_green_space_use) %>% 
-  ggplot() +
-  aes(x = nearest_green_space_use) +
-  geom_bar() +
-  ggtitle("Utilisation of Nearest green space usage by respondents to \n some degree \"dissatisfied\" with condition") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
-
-```
 
 Interpretation: 
 
@@ -624,24 +725,26 @@ shs_disaggregated_for_model %>%
 
 ```
 
-### Utilisation by gender of green space 
-
 ```{r}
-shs_disaggregated_for_model %>% 
-  filter(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied")) %>% 
-  filter(nearest_green_space_use != "Don't know") %>% 
-  group_by(nearest_green_space_use) %>% 
-  count(age) %>% 
-  mutate(prop = n/sum(n)) %>% 
+shs_disaggregated_for_model %>%
+  filter(local_access_to_green == "No") %>% 
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
   ggplot() +
-  aes(x = nearest_green_space_use, y = prop, fill = age) +
-  geom_col(position = "dodge") +
-  ggtitle("Utilisation by gender of green space any location for those satisfied to some degree") +
+  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
+  geom_bar() +
+  facet_wrap(~satisfied_with_nearest_green) +
+  ggtitle("Utilisation of nearest green space by satisfaction \n w/o good access") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  #facet_wrap(~age) +
   xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
+  
+
 
 ```
+
+
+### Utilisation by gender of green space 
+
+
 
 ```{r}
 shs_disaggregated_for_model %>% 
@@ -658,34 +761,26 @@ shs_disaggregated_for_model %>%
   facet_wrap(~gender) +
   xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
 
-```
-
-```{r}
-shs_disaggregated_for_model %>%
-  #count(nearest_green_space_use) %>% 
+shs_disaggregated_for_model %>% 
+  filter(satisfaction_with_nearest_green_space %in% c("Fairly dissatisfied", "Very dissatisfied")) %>% 
+  filter(nearest_green_space_use != "Don't know") %>% 
+  group_by(nearest_green_space_use) %>% 
+  count(gender) %>% 
+  mutate(prop = n/sum(n)) %>% 
   ggplot() +
-  aes(x = nearest_green_space_use, fill = local_access_to_green) +
-  geom_bar() +
-  facet_wrap(~local_access_to_green) +
-  ggtitle("Utilisation of Nearest green space usage by any access") +
-  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  aes(x = nearest_green_space_use, y = prop, fill = gender) +
+  geom_col(position = "dodge") +
+  ggtitle("Utilisation by gender of green space any location for those dissatisfied to some degree") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  facet_wrap(~gender) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
 
 ```
 
-```{r}
-shs_disaggregated_for_model %>%
-  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
-  #count(nearest_green_space_use) %>% 
-  ggplot() +
-  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
-  geom_bar() +
-  facet_wrap(~satisfied_with_nearest_green) +
-  ggtitle("Utilisation of Nearest green space usage by satisfaction or not") +
-  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-```
+
+
+`
 
 
 
@@ -821,3 +916,152 @@ How can we improve utilisation eof existing greenspaces by people?
 How can we improve access to greenspaces for people?
 
 SHould i have used any of the other shs datasets?
+
+
+***PLOTS FOR PRES***
+
+1
+
+```{r}
+col_pal_two <- c('#0398ff', '#37afff')
+col_pal_three <- c('#0398ff', '#7dbfe0', '#37afff')
+
+```
+
+
+```{r}
+shs_aggregate_responses_data_clean %>% 
+  group_by(age) %>% 
+  count(walking_time_to_nearest_green_or_blue_space) %>% 
+  mutate(Proportion = n/sum(n)) %>%
+  ggplot() +
+  aes(x = walking_time_to_nearest_green_or_blue_space, y = Proportion, fill = age) +
+  geom_col(position = "dodge") +
+  ggtitle("Proportion of respondents within varying walking times of \n green space by age group") +
+  xlab(("Walking time (mins) to nearest green space")) +
+  ylab("Proportion") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "Within an 11-20 minute walk","Within a 21-30 minute walk", "More than a 30 minute walk away", "Don't know"), labels = c("A 5 minute walk or less" = "5 or less", "Within a 6-10 minute walk" = "6-10", "Within an 11-20 minute walk" = "11-20","Within a 21-30 minute walk" = "21-30", "More than a 30 minute walk away" = "30 or more", "Don't know" = "Don't know")) +
+  scale_fill_discrete(type = col_pal_three, name = "Age")
+
+```
+
+2
+
+```{r}
+shs_proportions_data_clean %>%
+  filter(urban_rural_classification != "All") %>% # want age bands
+  filter(walking_time_to_nearest_green_or_blue_space != "All") %>%
+  group_by(urban_rural_classification, walking_time_to_nearest_green_or_blue_space) %>% 
+  summarise(n = n(), mean_perc = mean(value)) %>% 
+  ggplot(aes(x = walking_time_to_nearest_green_or_blue_space, y = mean_perc, fill = urban_rural_classification)) +
+  geom_col(position = "dodge") +
+  ggtitle("Mean percentage of respondents within varying walking times of \n green space by urban rural classification") +
+  xlab(("Walking time (mins) to nearest green space")) +
+  ylab("Mean %") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_fill_discrete(type = col_pal_two, name = "Urban / rural") +
+  scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "An 11 minute walk or more"), labels = c("A 5 minute walk or less" = "5 or less", "Within a 6-10 minute walk" = "6-10", "An 11 minute walk or more" = "11 or more"))
+
+
+```
+
+3
+
+```{r}
+shs_proportions_data_clean %>% 
+  #filter(measurement == "Percent") %>%
+  filter(simd_quintiles != "All") %>% 
+  filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>%
+  group_by(simd_quintiles, year) %>% 
+  summarise(mean_perc = mean(value), stdev = sd(value)) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = mean_perc, group = simd_quintiles, colour = simd_quintiles)) +
+  ggtitle("Percentage of respondents within 5 mins walk of green space times of \n green space by SIMD quintile") +
+  xlab(("Year")) +
+  ylab("Mean %") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  scale_x_discrete(limits = c(2013:2019)) +
+  scale_fill_discrete(name = "SIMD quintile", type = col_pal_two)
+  
+
+```
+
+4 
+
+```{r}
+shs_disaggregated_for_model %>%
+  #mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  #count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = local_access_to_green) +
+  geom_bar() +
+  facet_wrap(~local_access_to_green) +
+  ggtitle("Utilisation of nearest green space by access") +
+  xlab(("Nearest green space use")) +
+  ylab("Count") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_fill_discrete(type = col_pal_two, name = "Local access")
+
+```
+
+5
+
+```{r}
+shs_disaggregated_for_model %>%
+  #mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  # group_by() %>% 
+  # count(nearest_green_space_use) %>% 
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = gender) +
+  geom_bar() +
+  facet_wrap(~gender) +
+  ggtitle("Utilisation of nearest green space by gender") +
+  xlab(("Nearest green space use")) +
+  ylab("Count") +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  scale_fill_discrete(type = col_pal_two, name = "Gender")
+
+```
+
+6
+
+```{r}
+
+shs_disaggregated_for_model %>%
+  filter(local_access_to_green == "Yes") %>% 
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
+  geom_bar() +
+  facet_wrap(~satisfied_with_nearest_green) +
+  ggtitle("Utilisation of nearest green space by satisfaction \n w/ good access") +
+  xlab(("Nearest green space use")) +
+  ylab("Count") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  scale_fill_discrete(type = col_pal_two, name = "Satisfaction")
+
+```
+
+7
+
+```{r}
+shs_disaggregated_for_model %>%
+  filter(local_access_to_green == "No") %>% 
+  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
+  ggplot() +
+  aes(x = nearest_green_space_use, fill = satisfied_with_nearest_green) +
+  geom_bar() +
+  facet_wrap(~satisfied_with_nearest_green) +
+  ggtitle("Utilisation of nearest green space by satisfaction \n w/o good access") +
+  xlab(("Nearest green space use")) +
+  ylab("Count") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
+  scale_fill_discrete(type = col_pal_two, name = "Satisfaction")
+
+```
+
