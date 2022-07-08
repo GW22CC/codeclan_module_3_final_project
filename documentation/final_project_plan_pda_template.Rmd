@@ -14,7 +14,7 @@ output:
 
 ### Data Requirements
 
-I cna confirm that the data used in the project meets the following criteria:
+I can confirm that the data used in the project meets the following criteria:
 
 | Criteria | Expected | Actual |
 |----------|----------|--------|
@@ -29,25 +29,25 @@ I cna confirm that the data used in the project meets the following criteria:
 
 #### Business intelligence and data-driven decision making
 
-What insights can the business/organisation gain from your analysis and how will your analysis help the business/organisation make better decisions? 
+Q. What insights can the business/organisation gain from your analysis and how will your analysis help the business/organisation make better decisions? 
+
+The analysis of the Scottish Household Survey data, with a focus on green space, will generate insights and recommendations for the Scottish Government in relation to:
+
+- who does or doesn't have good access to green space?
+- how far do they have to go for access?
+- what characterises people with good access?
 
 #### Domain knowledge and the business context
 
-Briefly describe the business/organisation and where your analysis fits within its aims/activity. 
+Q. Briefly describe the business/organisation and where your analysis fits within its aims/activity. 
 
-The Scottish Household SUrvey (SHS), which began in 1999, is a continuous survey based on a sample of the general population in private residences in Scotland. It is financed by the Scottish Government. The aim of the survey is to provide representative information about the composition, characteristics and behaviours of Scottish households, both nationally and at a more local level. The survey covers a wide range of topics to allow links to be made between different policy areas, with a particular focus on information to aid policy decisions on transport and social inclusion.
+The Scottish Household Survey (SHS), was commenced in 1999, and is a annual, cross-sectional and voluntary survey based on a sample of the general population (~10k per year) in private residences in Scotland, financed by the Scottish Government.
 
-From 1999 up to 2011 the survey followed a fairly consistent survey design. From 2012 onwards, the survey was substantially redesigned to include elements of the Scottish House Condition Survey (SHCS) including the follow-up Physical Survey component. More details can be found in the survey documentation. 
+There are two parts to the survey, the household condition and random adult parts.
 
-This is crucial to informing the Fairer Scotland agenda, National Performance Framework and feeds in to the Scottish Surveys Core Questions (SSCQ) sample.
+The aim of the survey is to understand the composition, characteristics and behaviours of Scottish households. 
 
-The Fairer Scotland Duty (the Duty) came into force on 1 April 2018 and places a legal responsibility on named public bodies in Scotland to actively consider ('pay due regard' to) how they can reduce inequalities of outcome caused by socio-economic disadvantage, when making strategic decisions.
-
-The The National Performance Framework (NPF) measures Scotland’s progress against the National Outcomes. To do this, it uses ‘National Indicators’.
-
-These indicators give a measure of national wellbeing. They include a range of economic, social and environmental indicators.
-
-The Scottish Surveys Core Questions (SSCQ) is an annual Official Statistics publication. SSCQ is a result of a harmonised design across the three major Scottish Government household surveys, envisaged in the Long Term Survey Strategy. From January 2012 a set of 20 core questions have been asked in the Scottish Household Survey, the Scottish Health Survey and the Scottish Crime and Justice Survey. 
+The results will input into the Scottish Core Questions survey, Fairer Scotland Action Plan and National Framework (81 national indicators). These inputs will assist the Scottish Government in identifying policy areas for the future to improve social equality, inclusion and infrastructure such as transportation.
 
 ## Data
 
@@ -59,75 +59,37 @@ The internal data files are:
 
 - 'Distance to Green or Blue Space' 
 
-Every year Scottish Household Survey (SHS) asks adults how long it would take them to walk to their nearest green or blue space.
+The Scottish Household Survey (SHS) includes a question for adults on how long it would take them to walk to their nearest green (or blue) space. The blue element to this question is that canals for example are included within the open space types. This data is aggregated and presents the proportion of those responding the same way to a single question. The data contains character, data and numeric types.
 
-The question asking about walking distance to nearest greenspace informs the National Indicator on Access to Green and Blue Spaces. However before 2019, even though the list of spaces included riversides and beaches, the question text used the term "green or open space". In 2019 for one half of the sample this was changed slightly to "green, blue or open spaces" to check if including the word "blue" made any difference to the response given to the question about walking distance or the biennial follow-up questions asking about satisfaction with and frequency of use of nearest green or blue space. No statistically significant difference was found.
+- Various data files at the link: https://statistics.gov.scot/resource?uri=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Ffolders%2Fthemes%2Fcommunity-wellbeing-and-social-environment
 
-The data is reported here is representative of the adult population and is available by:
-
-• Local Authority
-
-• Age of the randomly selected adult
-
-• Gender of the randomly selected adult
-
-In the 2018 SHS the gender question was revised. In previous years interviewers asked if household members were 'male' or 'female'. In the 2018 survey the options given were: 'man/boy', 'woman/girl' and two additional responses: ‘identified in another way’ and ‘refused’. In order to remain harmonised with other statistics.gov.scot datasets, the previous response options 'male' and 'female' will be maintained.
-
-• Urban/Rural Classification
-
-• SIMD
-
-• Type Of Tenure
-
-• Household Type
-
-• Ethnicity of the randomly selected adult
-
-- 'Community belonging' 
-
-Every year Scottish Household Survey (SHS) asks adults how strongly they feel they belong to their immediate neighbourhood. The data is reported here on person level and is available by:
-
-• Local Authority
-
-• Gender of the randomly selected adult
-
-In the 2018 Scottish Household Survey the gender question was revised. In previous years interviewers asked if household members were 'male' or 'female'. In the 2018 survey the options given were: 'man/boy', 'woman/girl' and two additional responses: ‘identified in another way’ and ‘refused’. In order to remain harmonised with other statistics.gov.scot datasets, the previous response options 'male' and 'female' will be maintained.
-
-• Urban/Rural Classification
-
-• SIMD - 'Scottish Index of Multiple Deprivation 2020' The Scottish Index of Multiple Deprivation (SIMD) provides a relative ranking of the data zones in Scotland from 1 (most deprived) to 6,976 (least deprived) based on a weighted combination of data for seven domains: income, employment, health, education, skills and training, geographic access to services, crime and housing. The dataset includes ranks for each domain, as well as quantile bands for the overall and domain ranks (5%, 10% and 20%).
-
-Each data zone is assigned to vigintiles, deciles and quintiles, with band 1 containing the most deprived data zones. For instance, SIMD decile 1 contains the most deprived 10% of data zones and decile 10 contains the least deprived 10% of data zones.
-
-When comparing results across different iterations of SIMD, it is important to take account of changes to the methodology used to construct the individual domains and the overall SIMD between iterations, as well as changes in geographical units as data zones change for each Census.
-
-• Type Of Tenure
-
-• Household Type
-
-• Ethnicity
-
-• Walking distance to nearest green-space.
-
-
-I also used the '2011 Data Zone Lookup' .csv. file which contained geography lookup tables used for aggregation, from 2011 data zones to higher level geographies.
+I used the 'Derelict and Urban Vacant Land' and 'Population living in close proximity to a derelict site' data files to inform discussion points around the potential conversion of areas to urban green space.
+ 
+- I also used the '2011 Data Zone Lookup' .csv. file which contained the Scottish Government geography lookup tables used for aggregation, from 2011 data zones to higher level geographies.
 
 The external data files are:
 
+- A second dataset of information that had been scraped from academic sources was aggregated based on respondents similar responses to one or more questions. The number of people in each of these groupings was stated rather than a proportion as in 'Distance to Green or Blue Space'.
 
-
+I also consulted external research articles for example, 'The Relationship between Social Cohesion and Urban Green Space: An Avenue for Health Promotion' (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6388234/).
 
 #### Types of data
 
 What kind of data did you work with? E.g. categorical and numerical data and their sub-types.
 
+I worked with character, numeric and data types. The character categorical type was converted to a factor to allow for the decision tree analysis to be undertaken.
+
 #### Data formats
 
 What format did your data come in? E.g. all downloaded flat files (CSV) or any data from APIs, scraping etc.
 
+All the files that were used were in the form of .csv as published on the Scottish Government website.
+
 #### Data quality and bias
 
 Briefly describe the quality of the data and whether you have any reasons to suggest the data is biased e.g. only data from a specific demographic even though a broader demographic would be of interest to the organisation.
+
+The sample of the data is randomised based on post codes. In theory it's possible that voluntary survey is only undertaken by those with a specific opinion for example those unsatisfied with their nearest green space. However, data exploration revealed that respondents cover different groups for example all green space satisfaction ratings, age, sex, geographic location (incl. urban / rural) and employment type. 
 
 ## Ethics
 
@@ -135,9 +97,13 @@ Briefly describe the quality of the data and whether you have any reasons to sug
 
 Do you have any ethical concerns regarding the sourcing and extraction of your data? 
 
+The survey is both anonymous and confidential then results are aggregated before being published online by the Scottish Government. Therefore there are no ethical concerns regarding sourcing and extraction of the data.
+
 #### Ethical implications of business requirements
 
 Are there any ethical implications of the business requirements?
+
+As the results of analysis and insights could inform policy decisions it is important that these are representative and fair across society. Decisions should be balanced so that the groups most in need benefit for example those without good access to green space could be a focus for the creation of new areas and the benefits that this may bring as opposed to those who already have good access to this resource.
 
 ## Analysis
 
@@ -145,9 +111,22 @@ Are there any ethical implications of the business requirements?
 
 What were the main stages in your data analysis process?
 
+- Familiarisation with the data, e.g. which variables had values that could be compared
+- Summarised the data to understand the relative numbers and proportions to see if any normalisation would be required
+- Exploration of the relationships between different variables, e.g. age vs distance to nearest green space
+- Descriptive analytics, to summarise the data
+- Predicitive analytics, using a decision tree to predict which groups of people were most likely to have good local access to green space
+
 #### Tools for data analysis
 
 What were the main tools you used for your analysis?
+
+The main tools I used for analysis were:
+- ggplot
+- lapply() and rep() to disaggregate the data for modelling
+- rpart to create the decision tree
+- modelr to create predicions
+- yardstick for the model accuracy testing using the predictions
 
 #### Descriptive, diagnostic, predictive and prescriptive analysis
 
@@ -156,9 +135,21 @@ Please report under which of the below categories your analysis falls **and why*
 ::: {.emphasis}
 **Descriptive Analytics** tells you what happened in the past.
 
+I produced descriptive stats for example for the number of respondents in each year of the survey or the mean proportion and standard deviation values for green access categories by the urban or rural classification of the respondent.
+
 **Diagnostic Analytics** helps you understand why something happened in the past.
 
 **Predictive Analytics** predicts what is most likely to happen in the future.
+
+I used a Decision Tree which is a type of predictive classification algorithm. 
+
+The decision tree was used to characterise and predict which groups of people were most likely to have good local access to green space. 
+
+I chose this method because I thought that the categorical data would be suited to the branching nature of the algorithm. That is that people are clearly in one group or another. This is as opposed to branching on a continuous numerical variable where the value upon which a split of the data occurs may not truly reflect the groups within the data, i.e. there is a range of behaviours either side of the split value and it's unlikely to be binary in nature. As the decision tree requires a binary variable at it's root node I engineered a varibale using the 'walking time to nearest green space' variable so that respondents with access equal to or <5min were assigned 'Yes' and those who weren't were 'No'.
+
+To prepare the data I disaggregated it so that each individual respondent within a group was represented by a row in the data as opposed one row with the number of respondents stated at the end of the row. This disaggregation is important as the decision tree splits rows of the data based on their values for a specific variable and then allocates the rows down a branch. 
+
+I the second dataset where the respondents were grouped based on similar responses as this was the only data that allowed for a model to be produced. Unfortunately this meant that apparently important variables such as urban or rural classification and SIMD percentile could not be included. However, I visualised various variable pairings in ggplot and ggpairs to see if I could subset based on pairing importance; i also removed variables that were irrelevant, e.g. year. In the end I used all the data in the second dataset where the respondents were grouped as this allowed the best opportunity to characterise based on a range of variables. Relationships are shown as far as the are significant so all variable combinations do not appear in the final decision tree.
 
 **Prescriptive Analytics** recommends actions you can take to affect those outcomes.
 :::

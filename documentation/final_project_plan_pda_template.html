@@ -254,7 +254,7 @@ div.tocify {
 <h1>General</h1>
 <div id="data-requirements" class="section level3">
 <h3>Data Requirements</h3>
-<p>I cna confirm that the data used in the project meets the following criteria:</p>
+<p>I can confirm that the data used in the project meets the following criteria:</p>
 <table>
 <thead>
 <tr class="header">
@@ -269,54 +269,80 @@ div.tocify {
 <td>5,000</td>
 <td>TBC</td>
 </tr>
+<tr class="even">
+<td>Sources of data</td>
+<td>3</td>
+<td>TBC</td>
+</tr>
+<tr class="odd">
+<td>Data types</td>
+<td>text data, numeric data and dates</td>
+<td>TBC</td>
+</tr>
 </tbody>
 </table>
-<ul>
-<li>At least 3 sources of data -</li>
-<li>Must contain text data, numeric data and dates -</li>
-</ul>
-<p>Most of the data supplied with the briefs do meet the requirements, but we recommend that you personally make sure that you are indeed meeting these criteria. If your current datasets do not, you are more than welcome to supplement your analysis with further datasets that would help you meet the requirements.</p>
-</div>
-<div id="product-requirements" class="section level3">
-<h3>Product Requirements</h3>
-<p>Your actual final project analysis process will remain largely the same regardless if you are completing the PDA or not. However, you will need to do a bit more formal planning/documentation of your project for the PDA.</p>
-<p>Please create a project plan/documentation according to the template below:</p>
 </div>
 </div>
 <div id="template" class="section level1">
 <h1>Template</h1>
-<p><br></p>
-<div class="emphasis">
-<p>Use this template with associated subheadings to create the documentation to make sure you cover all necessary learning outcomes for the PDA. If you have any questions, just let an instructor know.</p>
-</div>
 <div id="context" class="section level2">
 <h2>Context</h2>
 <div id="business-intelligence-and-data-driven-decision-making" class="section level4">
 <h4>Business intelligence and data-driven decision making</h4>
-<p>What insights can the business/organisation gain from your analysis and how will your analysis help the business/organisation make better decisions?</p>
+<p>Q. What insights can the business/organisation gain from your analysis and how will your analysis help the business/organisation make better decisions?</p>
+<p>The analysis of the Scottish Household Survey data, with a focus on green space, will generate insights and recommendations for the Scottish Government in relation to:</p>
+<ul>
+<li>who does or doesn’t have good access to green space?</li>
+<li>how far do they have to go for access?</li>
+<li>what characterises people with good access?</li>
+</ul>
 </div>
 <div id="domain-knowledge-and-the-business-context" class="section level4">
 <h4>Domain knowledge and the business context</h4>
-<p>Briefly describe the business/organisation and where your analysis fits within its aims/activity.</p>
+<p>Q. Briefly describe the business/organisation and where your analysis fits within its aims/activity.</p>
+<p>The Scottish Household Survey (SHS), was commenced in 1999, and is a annual, cross-sectional and voluntary survey based on a sample of the general population (~10k per year) in private residences in Scotland, financed by the Scottish Government.</p>
+<p>There are two parts to the survey, the household condition and random adult parts.</p>
+<p>The aim of the survey is to understand the composition, characteristics and behaviours of Scottish households.</p>
+<p>The results will input into the Scottish Core Questions survey, Fairer Scotland Action Plan and National Framework (81 national indicators). These inputs will assist the Scottish Government in identifying policy areas for the future to improve social equality, inclusion and infrastructure such as transportation.</p>
 </div>
 </div>
 <div id="data" class="section level2">
 <h2>Data</h2>
 <div id="internal-and-external-data-sources" class="section level4">
 <h4>Internal and external data sources</h4>
-<p>Briefly describe your data sources and which were internal (provided by the organisation) and external (not sourced from the organisation’s data)</p>
+<p>Brief description of data sources both internal (provided by the organisation) and external (not sourced from the organisation’s data).</p>
+<p>The internal data files are:</p>
+<ul>
+<li>‘Distance to Green or Blue Space’</li>
+</ul>
+<p>The Scottish Household Survey (SHS) includes a question for adults on how long it would take them to walk to their nearest green (or blue) space. The blue element to this question is that canals for example are included within the open space types. This data is aggregated and presents the proportion of those responding the same way to a single question. The data contains character, data and numeric types.</p>
+<ul>
+<li>Various data files at the link: <a href="https://statistics.gov.scot/resource?uri=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Ffolders%2Fthemes%2Fcommunity-wellbeing-and-social-environment" class="uri">https://statistics.gov.scot/resource?uri=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Ffolders%2Fthemes%2Fcommunity-wellbeing-and-social-environment</a></li>
+</ul>
+<p>I used the ‘Derelict and Urban Vacant Land’ and ‘Population living in close proximity to a derelict site’ data files to inform discussion points around the potential conversion of areas to urban green space.</p>
+<ul>
+<li>I also used the ‘2011 Data Zone Lookup’ .csv. file which contained the Scottish Government geography lookup tables used for aggregation, from 2011 data zones to higher level geographies.</li>
+</ul>
+<p>The external data files are:</p>
+<ul>
+<li>A second dataset of information that had been scraped from academic sources was aggregated based on respondents similar responses to one or more questions. The number of people in each of these groupings was stated rather than a proportion as in ‘Distance to Green or Blue Space’.</li>
+</ul>
+<p>I also consulted external research articles for example, ‘The Relationship between Social Cohesion and Urban Green Space: An Avenue for Health Promotion’ (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6388234/" class="uri">https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6388234/</a>).</p>
 </div>
 <div id="types-of-data" class="section level4">
 <h4>Types of data</h4>
 <p>What kind of data did you work with? E.g. categorical and numerical data and their sub-types.</p>
+<p>I worked with character, numeric and data types. The character categorical type was converted to a factor to allow for the decision tree analysis to be undertaken.</p>
 </div>
 <div id="data-formats" class="section level4">
 <h4>Data formats</h4>
 <p>What format did your data come in? E.g. all downloaded flat files (CSV) or any data from APIs, scraping etc.</p>
+<p>All the files that were used were in the form of .csv as published on the Scottish Government website.</p>
 </div>
 <div id="data-quality-and-bias" class="section level4">
 <h4>Data quality and bias</h4>
 <p>Briefly describe the quality of the data and whether you have any reasons to suggest the data is biased e.g. only data from a specific demographic even though a broader demographic would be of interest to the organisation.</p>
+<p>The sample of the data is randomised based on post codes. In theory it’s possible that voluntary survey is only undertaken by those with a specific opinion for example those unsatisfied with their nearest green space. However, data exploration revealed that respondents cover different groups for example all green space satisfaction ratings, age, sex, geographic location (incl. urban / rural) and employment type.</p>
 </div>
 </div>
 <div id="ethics" class="section level2">
@@ -324,10 +350,12 @@ div.tocify {
 <div id="ethical-issues-in-data-sourcing-and-extraction" class="section level4">
 <h4>Ethical issues in data sourcing and extraction</h4>
 <p>Do you have any ethical concerns regarding the sourcing and extraction of your data?</p>
+<p>The survey is both anonymous and confidential then results are aggregated before being published online by the Scottish Government. Therefore there are no ethical concerns regarding sourcing and extraction of the data.</p>
 </div>
 <div id="ethical-implications-of-business-requirements" class="section level4">
 <h4>Ethical implications of business requirements</h4>
 <p>Are there any ethical implications of the business requirements?</p>
+<p>As the results of analysis and insights could inform policy decisions it is important that these are representative and fair across society. Decisions should be balanced so that the groups most in need benefit for example those without good access to green space could be a focus for the creation of new areas and the benefits that this may bring as opposed to those who already have good access to this resource.</p>
 </div>
 </div>
 <div id="analysis" class="section level2">
@@ -335,18 +363,32 @@ div.tocify {
 <div id="stages-in-the-data-analysis-process" class="section level4">
 <h4>Stages in the data analysis process</h4>
 <p>What were the main stages in your data analysis process?</p>
+<ul>
+<li>Familiarisation with the data, e.g. which variables had values that could be compared</li>
+<li>Summarised the data to understand the relative numbers and proportions to see if any normalisation would be required</li>
+<li>Exploration of the relationships between different variables, e.g. age vs distance to nearest green space</li>
+<li>Descriptive analytics, to summarise the data</li>
+<li>Predicitive analytics, using a decision tree to predict which groups of people were most likely to have good local access to green space</li>
+</ul>
 </div>
 <div id="tools-for-data-analysis" class="section level4">
 <h4>Tools for data analysis</h4>
 <p>What were the main tools you used for your analysis?</p>
+<p>The main tools I used for analysis were: - ggplot - lapply() and rep() to disaggregate the data for modelling - rpart to create the decision tree - modelr to create predicions - yardstick for the model accuracy testing using the predictions</p>
 </div>
 <div id="descriptive-diagnostic-predictive-and-prescriptive-analysis" class="section level4">
 <h4>Descriptive, diagnostic, predictive and prescriptive analysis</h4>
 <p>Please report under which of the below categories your analysis falls <strong>and why</strong> (can be more than one)</p>
 <div class="emphasis">
 <p><strong>Descriptive Analytics</strong> tells you what happened in the past.</p>
+<p>I produced descriptive stats for example for the number of respondents in each year of the survey or the mean proportion and standard deviation values for green access categories by the urban or rural classification of the respondent.</p>
 <p><strong>Diagnostic Analytics</strong> helps you understand why something happened in the past.</p>
 <p><strong>Predictive Analytics</strong> predicts what is most likely to happen in the future.</p>
+<p>I used a Decision Tree which is a type of predictive classification algorithm.</p>
+<p>The decision tree was used to characterise and predict which groups of people were most likely to have good local access to green space.</p>
+<p>I chose this method because I thought that the categorical data would be suited to the branching nature of the algorithm. That is that people are clearly in one group or another. This is as opposed to branching on a continuous numerical variable where the value upon which a split of the data occurs may not truly reflect the groups within the data, i.e. there is a range of behaviours either side of the split value and it’s unlikely to be binary in nature. As the decision tree requires a binary variable at it’s root node I engineered a varibale using the ‘walking time to nearest green space’ variable so that respondents with access equal to or &lt;5min were assigned ‘Yes’ and those who weren’t were ‘No’.</p>
+<p>To prepare the data I disaggregated it so that each individual respondent within a group was represented by a row in the data as opposed one row with the number of respondents stated at the end of the row. This disaggregation is important as the decision tree splits rows of the data based on their values for a specific variable and then allocates the rows down a branch.</p>
+<p>I the second dataset where the respondents were grouped based on similar responses as this was the only data that allowed for a model to be produced. Unfortunately this meant that apparently important variables such as urban or rural classification and SIMD percentile could not be included. However, I visualised various variable pairings in ggplot and ggpairs to see if I could subset based on pairing importance; i also removed variables that were irrelevant, e.g. year. In the end I used all the data in the second dataset where the respondents were grouped as this allowed the best opportunity to characterise based on a range of variables. Relationships are shown as far as the are significant so all variable combinations do not appear in the final decision tree.</p>
 <p><strong>Prescriptive Analytics</strong> recommends actions you can take to affect those outcomes.</p>
 </div>
 </div>
