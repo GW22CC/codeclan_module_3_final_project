@@ -1,9 +1,9 @@
 ---
-title: "R Notebook"
+  title: "R Notebook"
 output: html_notebook
 ---
-
-```{r, message=FALSE, warning=FALSE}
+  
+  ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(janitor)
 
@@ -29,8 +29,8 @@ proximity_to_derelict <- read_csv("../raw_data/shs_population_living_in_close_pr
 
 ```
 Data cleaning/ wrangling: 
-
-Dataset format 1
+  
+  Dataset format 1
 
 - harmonise variable names before df joins ("walking_time_to_nearest_green_or_blue_space" = "distance_to_nearest_green_or_blue_space");
 - deselect "Units" column from joined dfs;
@@ -86,8 +86,8 @@ shs_aggregate_responses_data_clean <- shs_aggregate_responses_data
 ```
 
 Write clean data to file at clean data folder:
-
-```{r}
+  
+  ```{r}
 write_csv(shs_proportions_data_clean, "../clean_data/shs_proportions_data_clean.csv")
 write_csv(shs_aggregate_responses_data_clean, "../clean_data/shs_aggregate_responses_data_clean.csv")
 
