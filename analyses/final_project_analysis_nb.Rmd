@@ -1,11 +1,13 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Final Project
 
-## Analysis
+## Setup
 
 ```{r}
 library(tidyverse)
@@ -15,6 +17,10 @@ library(infer)
 library(funtimes)
 library(trend)
 library(GGally)
+library(rpart)
+library(rpart.plot)
+library(modelr)
+library(yardstick)
 
 ```
 
@@ -29,7 +35,7 @@ proximity_derelict <- read_csv("../raw_data/shs_population_living_in_close_proxi
 
 ```
 
-### Number respondents per year
+### Number of respondents per year
 
 ```{r}
 shs_aggregate_responses_data_clean %>% 
@@ -38,25 +44,15 @@ shs_aggregate_responses_data_clean %>%
 
 ```
 
-```{r}
-### Executing these filters over all dataset reduces no. rows from 58k to 38k only filtering as required.
-
-# Only removing the "All" values as required for analyses
-# shs_proportions_data_clean <- shs_proportions_data_clean %>%
-# filter(walking_time_to_nearest_green_or_blue_space != "Don't Know") 
-# 
-# shs_aggregate_responses_data_clean <- shs_aggregate_responses_data_clean %>% 
-#   filter(walking_time_to_nearest_green_or_blue_space != "Don't know") %>% 
-#   filter(satisfaction_with_nearest_green_space != "No opinion") %>% 
-#   filter(nearest_green_space_use != "Don't know")
-
-# filter(!is.na(highest_education_level)) %>% # better to do as required for a plot or model
-# filter(!is.na(volunteering_last_twelve_months)) # better to do as required for a plot or model
-
-```
-
-
 ## Analysis
+
+### Rationale
+
+Access to these spaces important for health, community, etc. and recently during lockdown etc. especially for people without a garden. Important to provide evidence for importance of these spaces given pressures on local budgets and the development pressure on green spaces.
+
+### Assumptions
+
+Definition of green space excludes private gardens.
 
 ### General Questions
 
@@ -68,17 +64,14 @@ We would like to to help us gain insights into how people feel about their local
     Are there any differences between rural and urban areas?
     Is there any way to characterise people who have good local access to green space?
 
-### Visualisation
 
 Explore age, gender, household type, simd quintiles, urban or rural, and as extension ethnicity, disabled, local authority, religion.
 
-I am defining "local access" as 5 minutes or less because i think that seems reasonable and 11+ is open ended so could be an hour for example. Based on research I see that the 5 minute walk is used in the national indicator.
+The best "local access" is defined as 5 minutes or less walking time within the national indicator.
+
+### Visualisation
 
 ```Are there certain groups that have local access to green space (5 min or less)? Are there groups that are lacking access (10 min+)?```
-
-What would be the benefits of quicker access to greenspace? Access to these spaces important for health, community, etc. and recently during lockdown etc. especially for people without a garden. Important to provide evidenec for importance of these spaces given pressures on local budgets and the development pressure on green spaces.
-
-Min area of greenspace definition does not incluide private gvbardens. 
 
 ## Access to green space for all people over time
 
@@ -96,9 +89,8 @@ shs_aggregate_responses_data_clean %>%
   scale_x_discrete(limits = c(2012:2019))
 
 ```
-Interpretation
 
-Sharp increase 2012 to 2013 from 35% to 70% then dips in 2017 and 2018 then up. Unclear why and may be by chance issuing of surveys to rural and urban respondents.
+Interpretation: sharp increase 2012 to 2013 from 35% to 70% then dips in 2017 and 2018 then up. Unclear why and may be by chance issuing of surveys to rural and urban respondents.
 
 ## Age 
 
@@ -123,7 +115,7 @@ shs_aggregate_responses_data_clean %>%
 
 ```
 
-### Interpretation
+Interpretation:
 
 Within in all age groups just over half of respondents have their nearest green or blue space within 5 minutes. The difference between 16-34 and 65+ IS/ISN'T signifciant. Majority (80-85%) have access within 10 minutes however X% respondents over 20 minutes away!
 
@@ -131,19 +123,17 @@ The question/measure used is the time it takes to get to each area and so the di
 
 Discussion:
 
-mean comfortable gait speed ranged from 127.2 cm/s for women in their seventies to 146.2 cm/s for men in their forties so younger on average walking 15% faster which could support idea of an artificial difference in distance.
+Mean comfortable gait speed ranged from 127.2 cm/s for women in their seventies to 146.2 cm/s for men in their forties so younger on average walking 15% faster which could support idea of an artificial difference in distance.
 
 Insights:
 
-How can we shift proportions left in relation to this partcular analysis?
+How can we shift proportions left in relation to this particular analysis?
 
 More green spaces in areas where old people live. (Does other analysis show that they will use it?)
 
 Improvements in fitness will open up more areas for older: Walking speed in elderly can be related to inactivity thus highlighting the importance of remaining active.
 
-### Statistical testing vs. Age
-
-## Gender (note - these cats may have changed in recent years so review)
+## Gender
 
 ```{r}
 shs_aggregate_responses_data_clean %>% 
@@ -185,7 +175,6 @@ shs_proportions_data_clean %>%
   scale_x_discrete(limits = c("A 5 minute walk or less", "Within a 6-10 minute walk", "An 11 minute walk or more", "Don't know")) # why is Don't know not showing
 
 ```
-
 
 Interpretation:
 
@@ -285,7 +274,6 @@ Interpretation:
 
 Respondents living in rural areas have greater access to local green or outdoor space than respondents living in urban areas. This is consistent across all years, 2013-2019.
 
-
 ## Local Authority (LA)
 
 ```{r}
@@ -325,13 +313,14 @@ Interpretation:
 
 The range of variation in access to local green or blue areas between local authority areas is ~55-85% (30%). The LA with least access is West Dunbartonshire 50.87037 and the are with greatest is East Lothian	83.92233.
 
+
 ```Are there big differences in how far people have to walk to access their green space?```
 
 What is the time category proportion to green or blue space for the urban and rural groups with different access?
 
 ```{r}
 shs_proportions_data_clean %>%
-  filter(urban_rural_classification != "All") %>% # want age bands
+  filter(urban_rural_classification != "All") %>%
   filter(walking_time_to_nearest_green_or_blue_space != "All") %>%
   group_by(urban_rural_classification, walking_time_to_nearest_green_or_blue_space) %>% 
   summarise(n = n(), mean_perc = mean(value), stdev = sd(value)) %>% 
@@ -347,7 +336,7 @@ shs_proportions_data_clean %>%
 
 ```{r}
 shs_proportions_data_clean %>%
-  filter(age != "All") %>% # want age bands
+  filter(age != "All") %>%
   filter(walking_time_to_nearest_green_or_blue_space == "A 5 minute walk or less") %>% 
   group_by(la_name, walking_time_to_nearest_green_or_blue_space) %>% 
   summarise(walking_time_count = mean(value)) %>% 
@@ -375,13 +364,7 @@ Steps in decision tree model build:
 - variable reduction, e.g. selecting variables columns directly connected to outcome and some which are totally redundant or irrelevant
 - variable engineering, e.g. set important variables to type factor and replace the numeric values with strings for interpretability
 
-Remember to visualise pairings to subset the most apparently good predictors to build model.
-
-```{r}
-library(rpart)
-library(rpart.plot)
-
-```
+Visualise pairings to subset the most apparently good predictors to build model.
 
 ```{r}
 shs_engineered_for_model <- shs_aggregate_responses_data_clean %>% 
@@ -404,6 +387,7 @@ shs_engineered_for_model <- shs_aggregate_responses_data_clean %>%
 
 ```
 
+Disaggregating data
 
 ```{r}
 shs_group_size_one <- shs_engineered_for_model %>% 
@@ -415,17 +399,15 @@ shs_group_size_greater_than_one <- shs_engineered_for_model %>%
 repeated_rows_df <- data.frame(lapply(shs_group_size_greater_than_one, rep, shs_group_size_greater_than_one$n_persons))  # disaggregating rows based on group size in n_persons
 
 shs_disaggregated_for_model <- bind_rows(shs_group_size_one, repeated_rows_df) %>% 
-  select(-c(n_persons)) # remove n_persons after duplicated rows
+  select(-c(n_persons)) # remove n_persons after aggregated rows disaggregated
 
 ```
 
 Plots to identify which variables might be useful to predict whether people have good access to local green space
 
-***should this be a proportion to aid the comparison? The interpretation of this plot needs some thought***
+(retired wealth unknown)
 
 ```{r}
-names(shs_disaggregated_for_model)
-
 shs_disaggregated_for_model %>% 
   select(local_access_to_green, economic_status) %>% 
   group_by(local_access_to_green, economic_status) %>% 
@@ -433,8 +415,7 @@ shs_disaggregated_for_model %>%
   ggplot() +
   aes(x = local_access_to_green, y = total_count, fill = economic_status) +
   geom_col(position = "dodge") #+
-  xlim("Full Time Employment", "Part Time Employment", "Self Employed", "Training", "Retired", "Other") # retired wealth unknown
-  
+  xlim("Full Time Employment", "Part Time Employment", "Self Employed", "Training", "Retired", "Other")
 
 ```
 
@@ -467,25 +448,6 @@ shs_disaggregated_for_model %>%
 Interpretation: the pattern for age and local access to green or not is different so it does seem like a good predictor.
 
 ```{r}
-# shs_disaggregated_for_model %>% 
-#   select(-c(nearest_green_space_use, economic_status, age)) %>% 
-#   ggpairs()
-
-```
-ggpairs plots show commnity_belonging, neighbourhood rating, gender, volunteering
-
-
-```{r}
-# library(splitstackshape)
-# 
-# sets <- stratified(shs_disaggregated_for_model, group = c("local_access_to_green", "age"), bothSets = TRUE, size = 0.2)
-# 
-# disaggregated_responses_test <- sets$SAMP1
-# disaggregated_responses_train <- sets$SAMP2
-
-```
-
-```{r}
 # get how many rows we have in total to work out the percentage
 n_data <- nrow(shs_disaggregated_for_model)
 
@@ -499,9 +461,6 @@ disaggregated_responses_test <- slice(shs_disaggregated_for_model, test_index)
 disaggregated_responses_train <- slice(shs_disaggregated_for_model, -test_index)
 
 ```
-
-
-
 
 ```{r}
 disaggregated_responses_test %>%
@@ -533,11 +492,9 @@ rpart.rules(shs_fit)
 
 Interpretation:
 
-People who like to use green spaces almost every day tend to live very close to them. People who use parks once a week or fortnight, or less or made up of people ranging from Very satisfied	to Very dissatisfied so it seems it depends on the person as to extent but people will go to green space if it's there no matter what satisfaction level. ***remove No opinion?***
+People who like to use green spaces almost every day tend to live very close to them. People who use parks once a week or fortnight, or less or made up of people ranging from Very satisfied	to Very dissatisfied so it seems it depends on the person as to extent but people will go to green space if it's there no matter what satisfaction level.
 
 ```{r}
-library(modelr)
-
 # add the predictions
 shs_test_pred <- disaggregated_responses_test %>%
   add_predictions(shs_fit, type = 'class')
@@ -545,14 +502,10 @@ shs_test_pred <- disaggregated_responses_test %>%
 ```
 
 ```{r}
-
-library(yardstick)
-
 conf_mat <- shs_test_pred %>%
               conf_mat(truth = local_access_to_green, estimate = pred)
 
 conf_mat
-
 
 ```
 
@@ -560,8 +513,7 @@ conf_mat
 accuracy <- shs_test_pred %>%
  accuracy(truth = local_access_to_green, estimate = pred)
 
-accuracy 
-
+accuracy
 
 ```
 
@@ -661,20 +613,6 @@ shs_disaggregated_for_model %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
-```{r}
-shs_disaggregated_for_model %>%
-  mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
-  group_by() %>% 
-  count(nearest_green_space_use) %>% 
-  ggplot() +
-  aes(x = nearest_green_space_use, fill = gender) +
-  geom_bar() +
-  facet_wrap(~gender) +
-  ggtitle("Utilisation of nearest green space by access") +
-  xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-```
-
 
 ```{r}
 shs_disaggregated_for_model %>%
@@ -691,9 +629,7 @@ shs_disaggregated_for_model %>%
 ```
 
 
-
 ```{r}
-
 shs_disaggregated_for_model %>%
   filter(local_access_to_green == "Yes") %>% 
   mutate(satisfied_with_nearest_green = if_else(satisfaction_with_nearest_green_space %in% c("Fairly satisfied", "Very satisfied"), "Yes", "No"), .after = satisfaction_with_nearest_green_space) %>%
@@ -704,11 +640,8 @@ shs_disaggregated_for_model %>%
   ggtitle("Utilisation of nearest green space by satisfaction \n w/ good access") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
-  
 
 ```
-
-***facet the utilisation plots by satisfaction? (reduced cats for ease of comparison)*** 
 
 Interpretation: 
 
@@ -736,15 +669,10 @@ shs_disaggregated_for_model %>%
   ggtitle("Utilisation of nearest green space by satisfaction \n w/o good access") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   xlim("Every day", "Several times a week", "Once a week", "Several times a month", "Once a month", "Less often", "Not at all")
-  
-
 
 ```
 
-
 ### Utilisation by gender of green space 
-
-
 
 ```{r}
 shs_disaggregated_for_model %>% 
@@ -777,13 +705,6 @@ shs_disaggregated_for_model %>%
 
 ```
 
-
-
-
-`
-
-
-
 ```{r}
 shs_disaggregated_for_model %>%
   filter(local_access_to_green == "No") %>% 
@@ -802,10 +723,6 @@ shs_disaggregated_for_model %>%
 
 For a given value of [access to green space: local or not local] how do people rate their neighbourhood?
 
-H0 - there is no difference in how people rate their neighbourhood varying with local access to green space?
-
-Removing nearest green space use from model might help go deeper? Calculate likelihood?
-
 ```{r}
 shs_disaggregated_for_model %>% # neighbourhood codes aren't in neighbourhood rating dataset
   ggplot() +
@@ -820,14 +737,7 @@ Interpretation:
 
 Greater proportion of people rating neighbourhood as good in locations with green space <5m.
 
-***Is this difference significant?***
-
-
 ```Q. Are there differences in how they rate their communities?```
-
-H0 - there is no difference in how people rate their neighbourhood varying with local access to green space?
-
-Removing nearest green space use from model might help go deeper? Calculate likelihood?
 
 ```{r}
 shs_disaggregated_for_model %>%
@@ -842,33 +752,10 @@ shs_disaggregated_for_model %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
+
 Interpretation:
 
-No diff in ratio of community belong for good or no local access. This might suggest that community raiting depends on other factors such as . This might suggest that green spaces are under utilised as a resource for community events / involvement - perhaps more allotments?
-
-```Q. Is there any way to predict which households would have higher ratings?```
-
-Decision tree - from class notes wk11 day2, "Predicting a category or numerical target value is pretty easy using decision trees."
-
-Neighbourhood - can't look at neighbourhood as neighbourhood satisfaction rating and neighbourhood ID are not in the same dataframe
-
-```{r}
-shs_fit <- rpart(
-  formula = community_belonging ~ ., # needs to be binary outcome
-  data = disaggregated_responses_train, 
-  method = 'class'
-)
-
-rpart.plot(shs_fit, 
-           yesno = 2, 
-           fallen.leaves = TRUE, 
-           faclen = 4, 
-           digits = 4)
-
-
-```
-
-Random forest?
+No difference in ratio of community belong for good or no local access. This might suggest that community rating depends on other factors. This might suggest that green spaces are under utilised as a resource for community events / involvement - perhaps more allotments?
 
 ### Proximity to derelict
 
@@ -900,6 +787,7 @@ derelict_vacant_land %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
+
 Interpetation:
 
 FIFA standards for international matches dictate that the pitch can be between 0.62-0.82 hectares.
@@ -918,7 +806,7 @@ How can we improve access to greenspaces for people?
 SHould i have used any of the other shs datasets?
 
 
-***PLOTS FOR PRES***
+***A subset (seven) of the above code blocks are to be presented and are formatted below to be consistent with presentation style guide***
 
 1
 
